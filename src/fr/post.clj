@@ -1,14 +1,12 @@
 (ns fr.post
-  (:require  [fr.highlight :as highlight]
-             [clojure.string :as string]
+  (:require  [clojure.string :as string]
              [me.raynes.cegdown :as md]
              [clj-time.format :as tf]))
 
 (def formatter  (tf/formatter "yyyy-MM-dd"))
 
 (def pegdown-options ;; https://github.com/sirthias/pegdown
-  [:autolinks :fenced-code-blocks :smartypants :strikethrough])
-
+  [:autolinks :fenced-code-blocks :smartypants :tables :strikethrough])
 
 (defn- remove-meta  [page]
   (string/replace page #"(?is)^---.*?---" ""))

@@ -19,8 +19,9 @@
                               (pygments/highlight lang :html)
                               extract-code))))
 
-(defn highlight-code-blocks  [page]
-  (enlive/sniptest page
+(defn highlight-code-blocks 
+  ([page] (enlive/sniptest page
                    [:pre :code] highlight
                    [:pre :code] #(assoc-in %  [:attrs :class] "highlight")))
+  ([page extra] page))
 
