@@ -28,7 +28,7 @@
   (tf/unparse  (tf/formatter "yyyy") date))
 
 (defn- make-link  [link]
-  [:a  {:href  (str "/links/" link)} link])
+  [:a  {:href  (str "/links/" link ".html")} link])
 
 (defn- connect  [links]
   (reduce #(conj %1 ", "  (make-link %2))  (make-link  (first links))  (rest links)))
@@ -119,7 +119,7 @@
    [:h1  [:a  {:href path} title]]])
 
 (defn tag-entry  [tag posts]
-  (let  [sorted-posts  (reverse  (sort-by :path posts))]
+  (let  [sorted-posts  (reverse  (sort-by :date posts))]
     (cons
       [:h2 tag]
       (map tag-post sorted-posts))))
@@ -137,7 +137,7 @@
 
 
 (defn layout-tag-page  [tags posts]
-    [(str "/links/" tags "/index.html")  (fn  [req]  (tag req posts tags))])
+    [(str "/links/" tags ".html")  (fn  [req]  (tag req posts tags))])
 
 (defn get-unique-tags  [posts]
     (->> posts  (map :tags) flatten distinct sort))
@@ -169,11 +169,11 @@
   (let [location (str "resources/" kind)]
     (map #(create-post kind %) (stasis/slurp-directory location #"\.md$"))))
 
-(defn create-dynamic-pages  [blog-posts mlog-posts]
+(defn create-dynamic-pages  [blog-posts mlog-posts posts]
   {"/index.html"       (fn  [req]  (home req blog-posts mlog-posts))
    "/blog/index.html"  (fn  [req]  (archive req blog-posts "Blog Entries"))
    "/mlog/index.html"  (fn  [req]  (archive req mlog-posts "Micro Blog"))
-   "/links/index.html" (fn  [req]  (tags req blog-posts))
+   "/links/index.html" (fn  [req]  (tags req posts))
   })
 
 (defn get-raw-pages  []
@@ -181,8 +181,8 @@
         mlog-posts (gen-posts-from-type "mlog")
         posts (concat blog-posts mlog-posts)]
     (stasis/merge-page-sources
-      {:partials (partial-pages  (stasis/slurp-directory "resoues/partials" #".*\.html$"))
-       :dynamic  (create-dynamic-pages blog-posts mlog-posts)
+      {:partials (partial-pages  (stasis/slurp-directory "resources/partials" #".*\.html$"))
+       :dynamic  (create-dynamic-pages blog-posts mlog-posts posts)
        :blog (layout-posts blog-posts)
        :mlog (layout-posts mlog-posts)
        :conn (create-tag-pages posts)
