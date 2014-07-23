@@ -39,30 +39,19 @@
      [:meta  {:charset "utf-8"}]
      [:meta  {:name "viewport"
               :content "width=device-width, initial-scale=1.0"}]
-     [:title (str "first rest : " title)]
+     [:title (str "first rest " (when title (str ": " title)))]
      [:link  {:rel "stylesheet" :href  (link/file-path request "/styles/main.css")}]]
     [:body
-     [:div.logo "first rest"]
-     page]
-    [:footer.endcap "nothing to see here"]))
+     [:div.logo 
+      [:a {:href "/"} "first rest"]]     
+     page
+     [:footer.endcap "nothing to see here"]]))
 
 (defn index-page [request posts]
   (let  [{:keys  [title tags date path content]}  (->> posts  (sort-by :date) reverse first)]
     (wrapper request title
              [:section.left "hi"]
              [:aside.right "hello"])))
-
-(defn layout-page  [request page]
-  (html5
-    [:head
-     [:meta  {:charset "utf-8"}]
-     [:meta  {:name "viewport"
-              :content "width=device-width, initial-scale=1.0"}]
-     [:title "first rest"]
-     [:link  {:rel "stylesheet" :href  (link/file-path request "/styles/main.css")}]]
-    [:body
-     [:div.logo "first rest"]
-     page]))
 
 (defn single-item [request {:keys  [title tags date path content]}]
   (wrapper request title
@@ -80,7 +69,7 @@
    [:h1  [:a  {:href path} title]]
    [:time  {:datetime date}
     [:span.month  (monthf date)] " "
-    [:span.day  (dayf date)]
+    [:span.day  (dayf date)] ", "
     [:span.year  (yearf date)]]
    (when  (not-empty tags)
      [:span.categories "Tags: "  (connect tags)])])
@@ -109,7 +98,7 @@
   (wrapper request "core"
   [:div 
    [:section.main (archive-like request blog "Main")]
-   [:aside.right (archive-like request mlog "Shortform")]]))
+   [:aside.right  (archive-like request mlog "Shortform")]]))
 
 (defn tag  [request posts tag]
   (archive request posts tag))
@@ -134,7 +123,6 @@
             [:div.body.entry-content
              [:div#blog-archives
               (map #(tag-entry % posts) unique-tags)]]]])))
-
 
 (defn layout-tag-page  [tags posts]
     [(str "/links/" tags ".html")  (fn  [req]  (tag req posts tags))])
@@ -163,7 +151,7 @@
 
 (defn partial-pages  [pages]
   (zipmap (keys pages)
-          (map #(fn  [req]  (layout-page req %))  (vals pages))))
+          (map #(fn  [req]  (wrapper req false %))  (vals pages))))
 
 (defn gen-posts-from-type [kind]
   (let [location (str "resources/" kind)]
@@ -179,14 +167,13 @@
 (defn get-raw-pages  []
   (let [blog-posts (gen-posts-from-type "blog")
         mlog-posts (gen-posts-from-type "mlog")
-        posts (concat blog-posts mlog-posts)]
+        posts      (concat blog-posts mlog-posts)]
     (stasis/merge-page-sources
       {:partials (partial-pages  (stasis/slurp-directory "resources/partials" #".*\.html$"))
        :dynamic  (create-dynamic-pages blog-posts mlog-posts posts)
-       :blog (layout-posts blog-posts)
-       :mlog (layout-posts mlog-posts)
-       :conn (create-tag-pages posts)
-       })))
+       :blog     (layout-posts blog-posts)
+       :mlog     (layout-posts mlog-posts)
+       :conn     (create-tag-pages posts)})))
 
 (defn prepare-page  [page req]
   (->  (if  (string? page) page  (page req)) 
