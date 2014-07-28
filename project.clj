@@ -13,8 +13,8 @@
                  [clj-time "0.8.0"]
                  [org.clojure/data.xml "0.0.7"]
                  [optimus "0.15.0"]]
-  :ring {:handler fr.clj.web/app}
-  :aliases {"build-site" ["run" "-m" "fr.clj.web/export"]}
+  :ring {:handler clj.fr.web/app}
+  :aliases {"build-site" ["run" "-m" "clj.fr.web/export"]}
   :profiles {:dev {:plugins [[lein-ring "0.8.11"]]}
              :test {:dependencies [[midje "1.6.3"]]
                     :plugins [[lein-midje "3.1.3"]]}})

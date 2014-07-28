@@ -1,4 +1,4 @@
-(ns fr.clj.picture
+(ns clj.fr.picture
   (:require [optimus.link :as link]
             [hiccup.core :refer  [html]]))
 

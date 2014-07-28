@@ -1,4 +1,4 @@
-(ns fr.clj.web
+(ns clj.fr.web
   (:require [optimus.assets :as assets]
             [optimus.export]
             [optimus.link :as link]
@@ -13,8 +13,8 @@
             [hiccup.page :refer  [html5]]
             [me.raynes.cegdown :as md]
             [stasis.core :as stasis]
-            [fr.clj.highlight :refer  [highlight-code-blocks]]
-            [fr.clj.post :refer [create-post]]))
+            [clj.fr.highlight :refer  [highlight-code-blocks]]
+            [clj.fr.post :refer [create-post]]))
 
 ;; ---
 ;; Helpers

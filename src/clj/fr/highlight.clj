@@ -1,4 +1,4 @@
-(ns fr.clj.highlight
+(ns clj.fr.highlight
   (:require  [clojure.java.io :as io]
              [clygments.core :as pygments]
              [net.cgrand.enlive-html :as enlive]))
