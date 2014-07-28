@@ -7,3 +7,4 @@ resources/public/js/main.js
 resources/public/js/target/
 .sass-cache/
 classes/
+.lein-deps-sum
