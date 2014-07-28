@@ -1,4 +1,4 @@
-(defproject fr "0.5.1"
+(defproject fr "0.5.3"
   :description "First Rest"
   :url "http://first.rest"
   :license {:name "Eclipse Public License"
@@ -13,8 +13,8 @@
                  [clj-time "0.8.0"]
                  [org.clojure/data.xml "0.0.7"]
                  [optimus "0.15.0"]]
-  :ring {:handler fr.web/app}
-  :aliases {"build-site" ["run" "-m" "fr.web/export"]}
+  :ring {:handler fr.clj.web/app}
+  :aliases {"build-site" ["run" "-m" "fr.clj.web/export"]}
   :profiles {:dev {:plugins [[lein-ring "0.8.11"]]}
              :test {:dependencies [[midje "1.6.3"]]
                     :plugins [[lein-midje "3.1.3"]]}})

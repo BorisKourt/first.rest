@@ -1,4 +1,4 @@
-(ns fr.post
+(ns fr.clj.post
   (:require  [clojure.string :as string]
              [me.raynes.cegdown :as md]
              [clj-time.format :as tf]))
