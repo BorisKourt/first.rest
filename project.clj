@@ -1,5 +1,5 @@
 (defproject fr "0.5.3"
-  :description "First Rest"
+  :description "first.rest"
   :url "http://first.rest"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}

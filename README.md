@@ -8,6 +8,7 @@
 
 Although the system currently works, the following will be helpful in the long run:
 
+- [ ] Create <picture> support
 - [ ] Add RSS feeds via clj-rss
 - [ ] Adjust post meta to use edn 
 - [ ] Revise Shortform rendering and format
@@ -20,3 +21,7 @@ Although the system currently works, the following will be helpful in the long r
 ## Details
 
 Will be more up-to-date on [the about page.](http://first.rest/about.html)
+
+## Documentation
+
+*Gasp* automated, but! Only in layout. [first.rest/doc](http://first.rest/doc/)
