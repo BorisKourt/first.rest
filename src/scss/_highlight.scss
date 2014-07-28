@@ -16,13 +16,23 @@ cyan      #2aa198  strings, numbers
 green     #859900  operators, other keywords
 */
 
-.highlight { background-color: #fdf6e3; color: #586e75;
+.highlight { background-color: rgba(253,246,227,0.6); color: #586e75;
 	display: block;
 	overflow: auto;
-	padding: 20px 0;
+	padding: 1.2em;
 	max-width: 100%;
-	font-family:  "Hermit", "Menlo", "Consolas", monospace;
-	line-height: 1.4em;
+	line-height: 1.2em;
+	border: 1px solid #ddd;
+	@extend %codefonts;
+	font-size: 12px;
+
+	@include bp-two {
+		font-size: 14px;
+	}
+
+	@include bp-three {
+		font-size: inherit;
+	}
 }
 .highlight .c { color: #93a1a1 } /* Comment */
 .highlight .err { color: #586e75 } /* Error */

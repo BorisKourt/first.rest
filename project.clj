@@ -10,11 +10,12 @@
                  [me.raynes/cegdown "0.1.1"]
                  [enlive "1.1.5"]
                  [clygments "0.1.1"]
-                 [clj-time "0.7.0"]
+                 [clj-time "0.8.0"]
                  [org.clojure/data.xml "0.0.7"]
                  [optimus "0.15.0"]]
   :ring {:handler fr.web/app}
   :aliases {"build-site" ["run" "-m" "fr.web/export"]}
-  :profiles {:dev {:plugins [[lein-ring "0.8.11"]]}
+  :profiles {:user {:plugins [[lein-ancient "0.6.0-SNAPSHOT"]]}
+             :dev {:plugins [[lein-ring "0.8.11"]]}
              :test {:dependencies [[midje "1.6.3"]]
                     :plugins [[lein-midje "3.1.3"]]}})

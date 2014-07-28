@@ -17,9 +17,9 @@
 (defn- extract-title  [meta]
   (->> meta  (re-seq #"title\s*:\s*(.*)") first second))
 
-(defn- extract-tags  [meta]
-  (if-let  [tag-str  (->> meta  (re-seq #"tags\s*:\s*\[(.*?)\]") first second)]
-    (map #(-> % string/trim string/lower-case)  (string/split tag-str #","))
+(defn- extract-connections  [meta]
+  (if-let  [connection-str  (->> meta  (re-seq #"connections\s*:\s*\[(.*?)\]") first second)]
+    (map #(-> % string/trim string/lower-case)  (string/split connection-str #","))
     []))
 
 (defn- extract-date  [path]
@@ -36,7 +36,7 @@
          content  (remove-meta raw-content)
          path  (str "/" kind (prepare-path raw-path))]
     {:title  (or  (extract-title meta-section) "Random Thought")
-     :tags  (extract-tags meta-section)
+     :connections  (extract-connections meta-section)
      :date  (extract-date raw-path)
      :path path
      :content  (md/to-html content pegdown-options)}))

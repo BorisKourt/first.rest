@@ -11,6 +11,7 @@
             [clj-time.format :as tf]
             [clj-time.core :as t]
             [fr.post :refer [create-post]]
+            [hiccup.core :refer [html]]
             [hiccup.page :refer  [html5]]
             [me.raynes.cegdown :as md]
             [stasis.core :as stasis]))
@@ -27,11 +28,13 @@
 (defn yearf  [date]
   (tf/unparse  (tf/formatter "yyyy") date))
 
-(defn- make-link  [link]
-  [:a  {:href  (str "/links/" link ".html")} link])
+(defn make-connection  [connection]
+  [:a  {:href  (str "/connections/" connection ".html")} connection])
 
-(defn- connect  [links]
-  (reduce #(conj %1 ", "  (make-link %2))  (make-link  (first links))  (rest links)))
+(defn connect  [connections]
+  (reduce #(conj %1 ", "  (make-connection %2))  
+           (make-connection  (first connections))  
+           (rest connections)))
 
 (defn wrapper [request title page]
   (html5
@@ -39,108 +42,143 @@
      [:meta  {:charset "utf-8"}]
      [:meta  {:name "viewport"
               :content "width=device-width, initial-scale=1.0"}]
-     [:title (str "first rest " (when title (str ": " title)))]
-     [:link  {:rel "stylesheet" :href  (link/file-path request "/styles/main.css")}]]
+     [:title (str "(first (rest)) " (when title (str "; " title)))]
+     [:link  {:rel "stylesheet" :href  (link/file-path request "/styles/main.css") :type "text/css"}]
+     [:link  {:rel "icon" :href  (link/file-path request "/favicon.ico") :type "image/x-icon"}]
+     [:link
+      {:type "text/css",
+       :rel "stylesheet",
+       :href
+       "http://fonts.googleapis.com/css?family=Roboto:400,400italic,700,700italic"}]
+
+     (map (fn [a & rest]
+            [:link
+             {:href (link/file-path request (str "/appicon-" a "x" a "-precomposed.png"))
+              :sizes (str  a "x" a )
+              :rel "apple-touch-icon-precomposed"}])
+          [152 144 114 96 72])
+
+     [:link {:href (link/file-path request (str "/appicon-precomposed.png")) 
+             :rel "apple-touch-icon-precomposed"}]
+    "<!--[if gte IE 9]>\n  <style type=\"text/css\">\n    .core, .endcap, .wraps {\n       filter: none;\n    }\n  </style>\n<![endif]-->" 
+    [:script {:src "/js/modernizr.js" :type "text/javascript"}]]
     [:body
-     [:div.logo 
-      [:a {:href "/"} "first rest"]]     
-     page
-     [:footer.endcap "nothing to see here"]]))
+      [:header.core
+       [:h1.logo 
+        [:a {:href "/"} 
+         [:span.pa "("]
+         [:span.wa "first"] " "
+         [:span.pb "("]
+         [:span.wb "rest"]
+         [:span.pb ")"]
+         [:span.pa ")"]]]
+       [:nav.core__navigation--dropdown
+        [:a "Menu"]
+        [:section.dropdown__content
+         [:a {:href "/about/"} "About"]
+         [:a {:href "/longform.html"} "Longform"]
+         [:a {:href "/shortform.html"} "Shortform"]
+         [:a {:href "/connections.html"} "Connections"]]]
+       [:nav.core__navigation
+        [:a {:href "/about/"} "About"]
+        [:a {:href "/longform.html"} "Longform"]
+        [:a {:href "/shortform.html"} "Shortform"]
+        [:a {:href "/connections.html"} "Connections"]]]     
+      [:section.wraps
+       page]
+      [:footer.endcap "&copy; First Rest &amp; Boris Kourtoukov " (t/year (t/today))]]))
 
-(defn index-page [request posts]
-  (let  [{:keys  [title tags date path content]}  (->> posts  (sort-by :date) reverse first)]
-    (wrapper request title
-             [:section.left "hi"]
-             [:aside.right "hello"])))
-
-(defn single-item [request {:keys  [title tags date path content]}]
+(defn single-item [request {:keys  [title connections date path content]}]
   (wrapper request title
            [:article.page 
             [:header
-             [:h2.title title]
-             (when tags 
-               [:span.tags (connect tags)])
+             [:h2.page__title title]
+             (when connections 
+               [:span.tags (connect connections)])
+             " "
              (when date
                [:span.date [:time  {:datetime date}  (monthf date) " "  (dayf date) ", "  (yearf date)]])]
-            [:section.content content]]))
+            [:section.page__content content]]))
 
-(defn- archive-post  [{:keys  [title date tags path]}]
-  [:article
-   [:h1  [:a  {:href path} title]]
+(defn archive-post  [{:keys  [title date connections path]}]
+  [:article.archive__post
+   [:h1.archive__title--single  [:a  {:href path} title]]
    [:time  {:datetime date}
     [:span.month  (monthf date)] " "
     [:span.day  (dayf date)] ", "
-    [:span.year  (yearf date)]]
-   (when  (not-empty tags)
-     [:span.categories "Tags: "  (connect tags)])])
+    [:span.year  (yearf date)]] " "
+   (when  (not-empty connections)
+     [:span.links "connections: "  (connect connections)])])
 
-(defn- archive-group  [[year posts]]
+(defn archive-group  [[year posts]]
   (let  [sorted-posts  (reverse  (sort-by :path posts))]
     (cons
-      [:h2 year]
+      [:h2.archive__title--date year]
       (map archive-post sorted-posts))))
 
 (defn archive-like  [request posts title]
   (let  [post-groups  (->> posts  (group-by #(t/year  (:date %)))  (sort-by first) reverse)]
-    [:div
-       [:article.entry  {:role "article"}
-        [:header
-         [:h1.entry-title title]]
-        [:div.body.entry-content
-         [:div#blog-archives
-          (map archive-group post-groups)]]]]))
+       [:section.archive
+        [:header.archive__header
+         [:h1.archive__title title]]
+        [:article.archive__content
+          (map archive-group post-groups)]]))
 
 (defn archive [request posts title]
  (wrapper request title 
   (archive-like request posts title)))
 
-(defn home [request blog mlog] 
+(defn home [request longform shortform] 
   (wrapper request "core"
-  [:div 
-   [:section.main (archive-like request blog "Main")]
-   [:aside.right  (archive-like request mlog "Shortform")]]))
+    (html [:header.home--intro "Welcome! These pages will speak to functional
+                               programming, Clojure, ClojureScript, game and web development,
+                               as well as anything that can play a role in tying these together. "
+           [:a {:href "/about/" :alt "about"} "More information &raquo;"]]
+          [:section.main (archive-like request longform "Longform")]
+          [:aside.right  (archive-like request shortform "Shortform")])))
 
-(defn tag  [request posts tag]
-  (archive request posts tag))
+(defn connection  [request posts connection]
+  (archive request posts connection))
 
-(defn tag-post  [{:keys  [path title]}]
-  [:article
-   [:h1  [:a  {:href path} title]]])
+(defn connection-post  [{:keys  [path title]}]
+   [:h3.archive__title--single  [:a  {:href path} title]])
 
-(defn tag-entry  [tag posts]
-  (let  [sorted-posts  (reverse  (sort-by :date posts))]
+(defn seq-contains?  [coll target]  (some #(= target %) coll))
+
+(defn connection-entry  [connection posts]
+  (let  [sorted (reverse  (sort-by :date posts)) 
+         filtered (filter #(seq-contains? (% :connections) connection) sorted)]
     (cons
-      [:h2 tag]
-      (map tag-post sorted-posts))))
+      [:h2.archive__title--single (make-connection connection)]
+      (html [:nav.archive__posts
+             (map connection-post filtered)]))))
 
-(defn tags  [request posts]
-  (let  [unique-tags  (->> posts  (map :tags) flatten distinct sort)]
+(defn connections  [request posts]
+  (let  [unique-connections  (->> posts  (map :connections) flatten distinct sort)]
     (wrapper request "connections"
-          [:div#content
-           [:article.hentry  {:role "article"}
-            [:header
-             [:h1.entry-title "Tags"]]
-            [:div.body.entry-content
-             [:div#blog-archives
-              (map #(tag-entry % posts) unique-tags)]]]])))
+           [:section.archive
+            [:header.archive__header
+             [:h1.archive__title "Connections"]]
+            [:article.archive__content
+              (map #(connection-entry % posts) unique-connections)]])))
 
-(defn layout-tag-page  [tags posts]
-    [(str "/links/" tags ".html")  (fn  [req]  (tag req posts tags))])
+(defn layout-connection-page  [connections posts]
+    [(str "/connections/" connections ".html")  (fn  [req]  (connection req posts connections))])
 
-(defn get-unique-tags  [posts]
-    (->> posts  (map :tags) flatten distinct sort))
+(defn get-unique-connections  [posts]
+    (->> posts  (map :connections) flatten distinct sort))
 
-(defn tag-posts  [tag posts]
-    (filter #((-> % :tags set) tag) posts))
+(defn connection-posts  [connection posts]
+    (filter #((-> % :connections set) connection) posts))
 
-(defn group-tags-posts  [posts]
-    (let  [unique-tags  (get-unique-tags posts)]
-          (reduce #(assoc %1 %2  (tag-posts %2 posts))  {} unique-tags)))
+(defn group-connections-posts  [posts]
+    (let  [unique-connections  (get-unique-connections posts)]
+          (reduce #(assoc %1 %2  (connection-posts %2 posts))  {} unique-connections)))
 
-(defn create-tag-pages  [posts]
-    (let  [tags-posts  (group-tags-posts posts)
-                   tags-layouts  (map #(apply layout-tag-page %) tags-posts)]
-          (into  {} tags-layouts)))
+(defn create-connection-pages  [posts]
+    (let  [connections-posts  (group-connections-posts posts)
+           connections-layouts  (map #(apply layout-connection-page %) connections-posts)]
+          (into  {} connections-layouts)))
 
 (defn layout-post  [post]
   [(:path post)  (fn  [req]  (single-item req post))])
@@ -157,23 +195,23 @@
   (let [location (str "resources/" kind)]
     (map #(create-post kind %) (stasis/slurp-directory location #"\.md$"))))
 
-(defn create-dynamic-pages  [blog-posts mlog-posts posts]
-  {"/index.html"       (fn  [req]  (home req blog-posts mlog-posts))
-   "/blog/index.html"  (fn  [req]  (archive req blog-posts "Blog Entries"))
-   "/mlog/index.html"  (fn  [req]  (archive req mlog-posts "Micro Blog"))
-   "/links/index.html" (fn  [req]  (tags req posts))
+(defn create-dynamic-pages  [long-posts short-posts posts]
+  {"/index.html"       (fn  [req]  (home req long-posts short-posts))
+   "/longform.html"  (fn  [req]  (archive req long-posts "Longform"))
+   "/shortform.html"  (fn  [req]  (archive req short-posts "Shortform"))
+   "/connections.html" (fn  [req]  (connections req posts))
   })
 
 (defn get-raw-pages  []
-  (let [blog-posts (gen-posts-from-type "blog")
-        mlog-posts (gen-posts-from-type "mlog")
-        posts      (concat blog-posts mlog-posts)]
+  (let [long-posts (gen-posts-from-type "longform")
+        short-posts (gen-posts-from-type "shortform")
+        posts      (concat long-posts short-posts)]
     (stasis/merge-page-sources
       {:partials (partial-pages  (stasis/slurp-directory "resources/partials" #".*\.html$"))
-       :dynamic  (create-dynamic-pages blog-posts mlog-posts posts)
-       :blog     (layout-posts blog-posts)
-       :mlog     (layout-posts mlog-posts)
-       :conn     (create-tag-pages posts)})))
+       :dynamic  (create-dynamic-pages long-posts short-posts posts)
+       :longform     (layout-posts long-posts)
+       :shortform     (layout-posts short-posts)
+       :connections     (create-connection-pages posts)})))
 
 (defn prepare-page  [page req]
   (->  (if  (string? page) page  (page req)) 
@@ -192,7 +230,7 @@
            optimizations/all 
            serve-live-assets))
 
-(def export-dir "dist")
+(def export-dir "html")
 
 (defn export  []
   (let  [assets  (optimizations/all  (get-assets)  {})]

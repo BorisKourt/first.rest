@@ -1,8 +1,9 @@
 dist/
 target/
-dist/
+html/
 target/
 *.swp
 resources/style/
 resources/js/
 .sass-cache/
+
