@@ -1,6 +1,6 @@
 (ns fr.picture
   (:require [optimus.link :as link]
-            [hiccup.page :refer  [html5]]))
+            [hiccup.core :refer  [html]]))
 
 (defn buid-srcset 
   "Constructs the list of image files based on

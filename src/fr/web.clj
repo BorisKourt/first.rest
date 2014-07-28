@@ -16,8 +16,11 @@
             [me.raynes.cegdown :as md]
             [stasis.core :as stasis]))
 
-(defn get-assets  []
-  (assets/load-assets "public"  [#".*"]))
+;; ---
+;; Helpers
+;; ---
+ 
+(defn seq-contains?  [coll target]  (some #(= target %) coll))
 
 (defn monthf  [date]
   (tf/unparse  (tf/formatter "MMM") date))
@@ -28,13 +31,9 @@
 (defn yearf  [date]
   (tf/unparse  (tf/formatter "yyyy") date))
 
-(defn make-connection  [connection]
-  [:a  {:href  (str "/connections/" connection ".html")} connection])
-
-(defn connect  [connections]
-  (reduce #(conj %1 ", "  (make-connection %2))  
-           (make-connection  (first connections))  
-           (rest connections)))
+;; ---
+;; Core Template, wraps all other pages.
+;; ---
 
 (defn wrapper [request title page]
   (html5
@@ -88,6 +87,22 @@
        page]
       [:footer.endcap "&copy; First Rest &amp; Boris Kourtoukov " (t/year (t/today))]]))
 
+;; ---
+;; Connection helpers
+;; ---
+
+(defn make-connection  [connection]
+  [:a  {:href  (str "/connections/" connection ".html")} connection])
+
+(defn connect  [connections]
+  (reduce #(conj %1 ", "  (make-connection %2))  
+           (make-connection  (first connections))  
+           (rest connections)))
+
+;; ---
+;; Single post template
+;; ---
+
 (defn single-item [request {:keys  [title connections date path content]}]
   (wrapper request title
            [:article.page 
@@ -99,6 +114,10 @@
              (when date
                [:span.date [:time  {:datetime date}  (monthf date) " "  (dayf date) ", "  (yearf date)]])]
             [:section.page__content content]]))
+
+;; ---
+;; Archives templates & functionality
+;; ---
 
 (defn archive-post  [{:keys  [title date connections path]}]
   [:article.archive__post
@@ -128,7 +147,9 @@
  (wrapper request title 
   (archive-like request posts title)))
 
-(defn home [request longform shortform] 
+(defn home 
+  "Home is a type of archive"
+  [request longform shortform] 
   (wrapper request "core"
     (html [:header.home--intro "Welcome! These pages will speak to functional
                                programming, Clojure, ClojureScript, game and web development,
@@ -137,13 +158,15 @@
           [:section.main (archive-like request longform "Longform")]
           [:aside.right  (archive-like request shortform "Shortform")])))
 
+;; ---
+;; Connection templates & functionality
+;; ---
+
 (defn connection  [request posts connection]
   (archive request posts connection))
 
 (defn connection-post  [{:keys  [path title]}]
    [:h3.archive__title--single  [:a  {:href path} title]])
-
-(defn seq-contains?  [coll target]  (some #(= target %) coll))
 
 (defn connection-entry  [connection posts]
   (let  [sorted (reverse  (sort-by :date posts)) 
@@ -180,6 +203,10 @@
            connections-layouts  (map #(apply layout-connection-page %) connections-posts)]
           (into  {} connections-layouts)))
 
+;; ---
+;; Post and partial pages
+;; ---
+
 (defn layout-post  [post]
   [(:path post)  (fn  [req]  (single-item req post))])
 
@@ -191,16 +218,16 @@
   (zipmap (keys pages)
           (map #(fn  [req]  (wrapper req false %))  (vals pages))))
 
-(defn gen-posts-from-type [kind]
-  (let [location (str "resources/" kind)]
-    (map #(create-post kind %) (stasis/slurp-directory location #"\.md$"))))
-
 (defn create-dynamic-pages  [long-posts short-posts posts]
   {"/index.html"       (fn  [req]  (home req long-posts short-posts))
    "/longform.html"  (fn  [req]  (archive req long-posts "Longform"))
    "/shortform.html"  (fn  [req]  (archive req short-posts "Shortform"))
    "/connections.html" (fn  [req]  (connections req posts))
   })
+
+(defn gen-posts-from-type [kind]
+  (let [location (str "resources/" kind)]
+    (map #(create-post kind %) (stasis/slurp-directory location #"\.md$"))))
 
 (defn get-raw-pages  []
   (let [long-posts (gen-posts-from-type "longform")
@@ -224,11 +251,26 @@
 (defn get-pages  []
   (prepare-pages  (get-raw-pages)))
 
+;; ---
+;; Assets
+;; ---
+
+(defn get-assets  []
+  (assets/load-assets "public"  [#".*"]))
+
+;; ---
+;; Ring App
+;; ---
+
 (def app (optimus/wrap 
            (stasis/serve-pages get-pages)  
            get-assets 
            optimizations/all 
            serve-live-assets))
+
+;; ---
+;; Static Export Setup
+;; ---
 
 (def export-dir "html")
 
