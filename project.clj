@@ -15,6 +15,8 @@
                  [optimus "0.15.0"]]
   :ring {:handler clj.fr.web/app}
   :aliases {"build-site" ["run" "-m" "clj.fr.web/export"]}
-  :profiles {:dev {:plugins [[lein-ring "0.8.11"]]}
+  :profiles {:dev {:plugins [[lein-ring "0.8.11"]
+                             [lein-marginalia "0.7.1"]
+                             [lein-ancient "0.6.0-SNAPSHOT"]]}
              :test {:dependencies [[midje "1.6.3"]]
                     :plugins [[lein-midje "3.1.3"]]}})
