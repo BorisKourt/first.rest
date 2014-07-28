@@ -17,6 +17,8 @@ Although the system currently works, the following will be helpful in the long r
 - [ ] CLJS for related content browsing
 - [X] Add marginalia
 - [ ] Output changes on build 
+- [ ] Generate robots and humans .txt files
+- [ ] Create a comprehensive list of resources
 
 ## Details
 
@@ -24,4 +26,4 @@ Will be more up-to-date on [the about page.](http://first.rest/about.html)
 
 ## Documentation
 
-*Gasp* automated, but! Only in layout. [first.rest/doc](http://first.rest/doc/)
+*Gasp* automated, but! Only the layout. [first.rest/doc](http://first.rest/doc/)

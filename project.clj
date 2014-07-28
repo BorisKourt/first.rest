@@ -12,7 +12,8 @@
                  [clygments "0.1.1"]
                  [clj-time "0.8.0"]
                  [org.clojure/data.xml "0.0.7"]
-                 [optimus "0.15.0"]]
+                 [optimus "0.15.0"]
+                 [clj-jgit "0.7.3"]]
   :ring {:handler clj.fr.web/app}
   :aliases {"build-site" ["run" "-m" "clj.fr.web/export"]}
   :profiles {:dev {:plugins [[lein-ring "0.8.11"]
