@@ -3,7 +3,7 @@ target/
 html/
 target/
 *.swp
-resources/style/
-resources/js/
+resources/styles/
+resources/js/main.js
 .sass-cache/
 
