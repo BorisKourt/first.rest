@@ -15,7 +15,6 @@
                  [optimus "0.15.0"]]
   :ring {:handler fr.web/app}
   :aliases {"build-site" ["run" "-m" "fr.web/export"]}
-  :profiles {:user {:plugins [[lein-ancient "0.6.0-SNAPSHOT"]]}
-             :dev {:plugins [[lein-ring "0.8.11"]]}
+  :profiles {:dev {:plugins [[lein-ring "0.8.11"]]}
              :test {:dependencies [[midje "1.6.3"]]
                     :plugins [[lein-midje "3.1.3"]]}})

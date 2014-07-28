@@ -75,12 +75,12 @@
        [:nav.core__navigation--dropdown
         [:a "Menu"]
         [:section.dropdown__content
-         [:a {:href "/about/"} "About"]
+         [:a {:href "/about.html"} "About"]
          [:a {:href "/longform.html"} "Longform"]
          [:a {:href "/shortform.html"} "Shortform"]
          [:a {:href "/connections.html"} "Connections"]]]
        [:nav.core__navigation
-        [:a {:href "/about/"} "About"]
+        [:a {:href "/about.html"} "About"]
         [:a {:href "/longform.html"} "Longform"]
         [:a {:href "/shortform.html"} "Shortform"]
         [:a {:href "/connections.html"} "Connections"]]]     
@@ -133,7 +133,7 @@
     (html [:header.home--intro "Welcome! These pages will speak to functional
                                programming, Clojure, ClojureScript, game and web development,
                                as well as anything that can play a role in tying these together. "
-           [:a {:href "/about/" :alt "about"} "More information &raquo;"]]
+           [:a {:href "/about.html" :alt "about"} "More information &raquo;"]]
           [:section.main (archive-like request longform "Longform")]
           [:aside.right  (archive-like request shortform "Shortform")])))
 
