@@ -2,7 +2,8 @@ dist/
 html/
 target/
 *.swp
-resources/public/styles/
+resources/public/styles/main.css
 resources/public/js/main.js
 resources/public/js/target/
 .sass-cache/
+classes/
