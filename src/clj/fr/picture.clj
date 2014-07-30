@@ -1,15 +1,17 @@
 (ns clj.fr.picture
   (:require [optimus.link :as link]
+            [clojure.string :as str]
             [hiccup.core :refer  [html]]))
 
-(defn buid-srcset 
+(defn build-srcset 
   "Constructs the list of image files based on
   resolution and file type."
-  [request image sizes exten]
-  (map #(link/file-path 
-          request 
-          (str image "-" % ".webp")) 
-       sizes))
+  [request image sizes ext]
+  (str/join ", " (map #(str (link/file-path 
+                             request 
+                             (str "/post-assets/" % "-" image ext))
+                            " " % "w") 
+                          sizes)))
 
 (defn picture
   "Creates a picture element with hiccup based on
@@ -19,16 +21,17 @@
    image
    alt 
    &  {:keys  [breakpoint sizes] 
-       :or    {breakpoint 640 
-               sizes  [200,400,800,1200,1600,2000]}}]
-  [:picture
-   [:source  
-    {:srcset  (str "\"" (build-srcset request image sizes ".webp") "\"")
-     :type "image/webp"}]
-   [:img 
-    {:src (link/file-path
-            request
-            (str image "-fallback.jpg"))
-     :alt alt
-     :sizes (str "\"(min-width:" breakpoint ") 60vw, 100vw\"")
-     :srcset (str "\"" (build-srcset request image sizes ".jpg") "\"")}]])
+       :or    {breakpoint 721 
+               sizes  [200,400,600,860,1020]}}]
+  (html 
+    [:img 
+     {:src  
+      (link/file-path
+        request
+        (str "/post-assets/" image ".jpg"))
+      :alt alt
+      :sizes  (str "(min-width:" breakpoint ") 60vw, 80vw")
+      :srcset (build-srcset request image sizes ".jpg")
+      :style "max-width: 100%;"}]))
+
+;; Create 'Extract Local Picture'

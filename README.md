@@ -8,17 +8,18 @@
 
 Although the system currently works, the following will be helpful in the long run:
 
-- [ ] Create <picture> support
+- [X] Create <picture> support - *rudementary support added*
 - [ ] Add RSS feeds via clj-rss
-- [ ] Adjust post meta to use edn 
+- [ ] Adjust post meta to use edn/transit 
 - [ ] Revise Shortform rendering and format
-- [ ] Check for git integration
+- [X] Check for git integration
+- [ ] Append git blame output to post
 - [ ] Create a transit representation for each page
 - [ ] CLJS for related content browsing
 - [X] Add marginalia
 - [ ] Output changes on build 
 - [ ] Generate robots and humans .txt files
-- [ ] Create a comprehensive list of resources
+- [ ] Create a comprehensive list of utilized resources
 
 ## Details
 
@@ -26,4 +27,4 @@ Will be more up-to-date on [the about page.](http://first.rest/about.html)
 
 ## Documentation
 
-*Gasp* automated, but! Only the layout. [first.rest/doc](http://first.rest/doc/)
+*Gasp* automated, but! In only the layout. [first.rest/doc](http://first.rest/doc/)

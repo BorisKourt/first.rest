@@ -8,3 +8,4 @@ resources/public/js/target/
 .sass-cache/
 classes/
 .lein-deps-sum
+temper/

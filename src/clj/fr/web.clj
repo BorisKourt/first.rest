@@ -5,6 +5,7 @@
             [optimus.optimizations :as optimizations]
             [optimus.prime :as optimus]
             [optimus.strategies :refer  [serve-live-assets]]
+            [optimus-img-transform.core :refer [transform-images]]
             [clojure.java.io :as io]
             [clojure.string :as str]
             [clj-time.format :as tf]
@@ -12,14 +13,17 @@
             [hiccup.core :refer [html]]
             [hiccup.page :refer  [html5]]
             [me.raynes.cegdown :as md]
+            [ring.middleware.content-type :refer  [wrap-content-type]]
             [stasis.core :as stasis]
             [clj.fr.highlight :refer  [highlight-code-blocks]]
-            [clj.fr.post :refer [create-post]]))
+            [clj.fr.post :refer [create-post]]
+            [clj.fr.git :refer :all]
+            [clj.fr.picture :refer [picture]]))
 
 ;; ---
 ;; Helpers
 ;; ---
- 
+
 (defn seq-contains?  [coll target]  (some #(= target %) coll))
 
 (defn monthf  [date]
@@ -43,7 +47,7 @@
               :content "width=device-width, initial-scale=1.0"}]
      [:title (str "(first (rest)) " (when title (str "; " title)))]
      [:link  {:rel "stylesheet" :href  (link/file-path request "/styles/main.css") :type "text/css"}]
-     [:link  {:rel "icon" :href  (link/file-path request "/favicon.ico") :type "image/x-icon"}]
+     [:link  {:rel "icon" :href  (link/file-path request "/images/favicon.ico") :type "image/x-icon"}]
      [:link
       {:type "text/css",
        :rel "stylesheet",
@@ -52,40 +56,43 @@
 
      (map (fn [a & rest]
             [:link
-             {:href (link/file-path request (str "/appicon-" a "x" a "-precomposed.png"))
+             {:href (link/file-path request (str "/images/appicon-" a "x" a "-precomposed.png"))
               :sizes (str  a "x" a )
               :rel "apple-touch-icon-precomposed"}])
           [152 144 114 96 72])
 
      [:link {:href (link/file-path request (str "/appicon-precomposed.png")) 
              :rel "apple-touch-icon-precomposed"}]
-    "<!--[if gte IE 9]>\n  <style type=\"text/css\">\n    .core, .endcap, .wraps {\n       filter: none;\n    }\n  </style>\n<![endif]-->" 
-    [:script {:src "/js/modernizr.js" :type "text/javascript"}]]
+     "<!--[if gte IE 9]>\n  <style type=\"text/css\">\n    .core, .endcap, .wraps {\n       filter: none;\n    }\n  </style>\n<![endif]-->" 
+     [:script {:src "/js/modernizr.js" :type "text/javascript"}]
+     [:script
+      {:type "text/javascript"}
+      "\n Modernizr.load({\n test: Modernizr.srcset,\n nope: '/js/srcset.js'\n },{\n test: Modernizr.vhunit,\n nope: '/js/viewport.js'\n });\n"]]
     [:body
-      [:header.core
-       [:h1.logo 
-        [:a {:href "/"} 
-         [:span.pa "("]
-         [:span.wa "first"] " "
-         [:span.pb "("]
-         [:span.wb "rest"]
-         [:span.pb ")"]
-         [:span.pa ")"]]]
-       [:nav.core__navigation--dropdown
-        [:a "Menu"]
-        [:section.dropdown__content
-         [:a {:href "/about.html"} "About"]
-         [:a {:href "/longform.html"} "Longform"]
-         [:a {:href "/shortform.html"} "Shortform"]
-         [:a {:href "/connections.html"} "Connections"]]]
-       [:nav.core__navigation
+     [:header.core
+      [:h1.logo 
+       [:a {:href "/"} 
+        [:span.pa "("]
+        [:span.wa "first"] " "
+        [:span.pb "("]
+        [:span.wb "rest"]
+        [:span.pb ")"]
+        [:span.pa ")"]]]
+      [:nav.core__navigation--dropdown
+       [:a "Menu"]
+       [:section.dropdown__content
         [:a {:href "/about.html"} "About"]
         [:a {:href "/longform.html"} "Longform"]
         [:a {:href "/shortform.html"} "Shortform"]
-        [:a {:href "/connections.html"} "Connections"]]]     
-      [:section.wraps
-       page]
-      [:footer.endcap "&copy; First Rest &amp; Boris Kourtoukov " (t/year (t/today))]]))
+        [:a {:href "/connections.html"} "Connections"]]]
+      [:nav.core__navigation
+       [:a {:href "/about.html"} "About"]
+       [:a {:href "/longform.html"} "Longform"]
+       [:a {:href "/shortform.html"} "Shortform"]
+       [:a {:href "/connections.html"} "Connections"]]]     
+     [:section.wraps
+      page]
+     [:footer.endcap "&copy; First Rest &amp; Boris Kourtoukov " (t/year (t/today))]]))
 
 ;; ---
 ;; Connection helpers
@@ -96,8 +103,8 @@
 
 (defn connect  [connections]
   (reduce #(conj %1 ", "  (make-connection %2))  
-           (make-connection  (first connections))  
-           (rest connections)))
+          (make-connection  (first connections))  
+          (rest connections)))
 
 ;; ---
 ;; Single post template
@@ -137,26 +144,26 @@
 
 (defn archive-like  [request posts title]
   (let  [post-groups  (->> posts  (group-by #(t/year  (:date %)))  (sort-by first) reverse)]
-       [:section.archive
-        [:header.archive__header
-         [:h1.archive__title title]]
-        [:article.archive__content
-          (map archive-group post-groups)]]))
+    [:section.archive
+     [:header.archive__header
+      [:h1.archive__title title]]
+     [:article.archive__content
+      (map archive-group post-groups)]]))
 
 (defn archive [request posts title]
- (wrapper request title 
-  (archive-like request posts title)))
+  (wrapper request title 
+           (archive-like request posts title)))
 
 (defn home 
   "Home is a type of archive"
   [request longform shortform] 
   (wrapper request "core"
-    (html [:header.home--intro "Welcome! These pages will speak to functional
-                               programming, Clojure, ClojureScript, game and web development,
-                               as well as anything that can play a role in tying these together. "
-           [:a {:href "/about.html" :alt "about"} "More information &raquo;"]]
-          [:section.main (archive-like request longform "Longform")]
-          [:aside.right  (archive-like request shortform "Shortform")])))
+           (html [:header.home--intro "Welcome! These pages will speak to functional
+                                      programming, Clojure, ClojureScript, game and web development,
+                                      as well as anything that can play a role in tying these together. "
+                  [:a {:href "/about.html" :alt "about"} "More information &raquo;"]]
+                 [:section.main (archive-like request longform "Longform")]
+                 [:aside.right  (archive-like request shortform "Shortform")])))
 
 ;; ---
 ;; Connection templates & functionality
@@ -166,7 +173,7 @@
   (archive request posts connection))
 
 (defn connection-post  [{:keys  [path title]}]
-   [:h3.archive__title--single  [:a  {:href path} title]])
+  [:h3.archive__title--single  [:a  {:href path} title]])
 
 (defn connection-entry  [connection posts]
   (let  [sorted (reverse  (sort-by :date posts)) 
@@ -179,29 +186,29 @@
 (defn connections  [request posts]
   (let  [unique-connections  (->> posts  (map :connections) flatten distinct sort)]
     (wrapper request "connections"
-           [:section.archive
-            [:header.archive__header
-             [:h1.archive__title "Connections"]]
-            [:article.archive__content
-              (map #(connection-entry % posts) unique-connections)]])))
+             [:section.archive
+              [:header.archive__header
+               [:h1.archive__title "Connections"]]
+              [:article.archive__content
+               (map #(connection-entry % posts) unique-connections)]])))
 
 (defn layout-connection-page  [connections posts]
-    [(str "/connections/" connections ".html")  (fn  [req]  (connection req posts connections))])
+  [(str "/connections/" connections ".html")  (fn  [req]  (connection req posts connections))])
 
 (defn get-unique-connections  [posts]
-    (->> posts  (map :connections) flatten distinct sort))
+  (->> posts  (map :connections) flatten distinct sort))
 
 (defn connection-posts  [connection posts]
-    (filter #((-> % :connections set) connection) posts))
+  (filter #((-> % :connections set) connection) posts))
 
 (defn group-connections-posts  [posts]
-    (let  [unique-connections  (get-unique-connections posts)]
-          (reduce #(assoc %1 %2  (connection-posts %2 posts))  {} unique-connections)))
+  (let  [unique-connections  (get-unique-connections posts)]
+    (reduce #(assoc %1 %2  (connection-posts %2 posts))  {} unique-connections)))
 
 (defn create-connection-pages  [posts]
-    (let  [connections-posts  (group-connections-posts posts)
-           connections-layouts  (map #(apply layout-connection-page %) connections-posts)]
-          (into  {} connections-layouts)))
+  (let  [connections-posts  (group-connections-posts posts)
+         connections-layouts  (map #(apply layout-connection-page %) connections-posts)]
+    (into  {} connections-layouts)))
 
 ;; ---
 ;; Post and partial pages
@@ -223,7 +230,7 @@
    "/longform.html"  (fn  [req]  (archive req long-posts "Longform"))
    "/shortform.html"  (fn  [req]  (archive req short-posts "Shortform"))
    "/connections.html" (fn  [req]  (connections req posts))
-  })
+   })
 
 (defn gen-posts-from-type [kind]
   (let [location (str "resources/" kind)]
@@ -242,7 +249,7 @@
 
 (defn prepare-page  [page req]
   (->  (if  (string? page) page  (page req)) 
-        highlight-code-blocks))
+      highlight-code-blocks))
 
 (defn prepare-pages  [pages]
   (zipmap (keys pages)  
@@ -258,15 +265,55 @@
 (defn get-assets  []
   (assets/load-assets "public"  [#".*"]))
 
+(defn optimize [assets options]
+  (-> assets
+      (transform-images {:regexp #"/post-assets/.*\.jpg"
+                         :quality 0.7
+                         :width 1020
+                         :prefix "1020-"
+                         :tmp-dir "temper"
+                         :progressive true})
+      (transform-images {:regexp #"/post-assets/.*\.jpg"
+                         :quality 0.7
+                         :width 860
+                         :prefix "860-"
+                         :tmp-dir "temper"
+                         :progressive true})
+      (transform-images {:regexp #"/post-assets/.*\.jpg"
+                         :quality 0.7
+                         :width 600
+                         :prefix "600-"
+                         :tmp-dir "temper"
+                         :progressive true})
+      (transform-images {:regexp #"/post-assets/.*\.jpg"
+                         :quality 0.7
+                         :width 400
+                         :prefix "400-"
+                         :tmp-dir "temper"
+                         :progressive true})
+      (transform-images {:regexp #"/post-assets/.*\.jpg"
+                         :quality 0.7
+                         :width 200
+                         :prefix "200-"
+                         :tmp-dir "temper"
+                         :progressive true})
+      (transform-images {:regexp #"/post-assets/.*\.jpg"
+                         :quality 0.6
+                         :width 904
+                         :tmp-dir "temper"
+                         :progressive true})
+      (optimizations/all options)))
+
 ;; ---
 ;; Ring App
 ;; ---
 
-(def app (optimus/wrap 
-           (stasis/serve-pages get-pages)  
-           get-assets 
-           optimizations/all 
-           serve-live-assets))
+(def app (-> (stasis/serve-pages get-pages)  
+             (optimus/wrap 
+               get-assets
+               optimize
+               serve-live-assets)
+             wrap-content-type))
 
 ;; ---
 ;; Static Export Setup
@@ -275,7 +322,7 @@
 (def export-dir "html")
 
 (defn export  []
-  (let  [assets  (optimizations/all  (get-assets)  {})]
+  (let  [assets  (optimize  (get-assets)  {})]
     (stasis/empty-directory! export-dir)
     (optimus.export/save-assets assets export-dir)
     (stasis/export-pages  (get-pages) export-dir  {:optimus-assets assets})))
