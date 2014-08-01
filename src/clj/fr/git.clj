@@ -2,7 +2,7 @@
 	(:require [clj-jgit.porcelain :refer (load-repo git-branch-list git-log git-blame)]
                   [clj-jgit.querying :refer (rev-list commit-info)]))
 
-;; --- 
+;; ---
 ;; File versions
 ;; ---
 

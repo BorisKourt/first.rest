@@ -14,6 +14,7 @@
                  [org.clojure/data.xml "0.0.7"]
                  [optimus "0.15.0"]
                  [optimus-img-transform "0.2.0"]
+                 [pathetic "0.5.1"]
                  [clj-jgit "0.7.6"]]
   :ring {:handler clj.fr.web/app}
   :aliases {"build-site" ["run" "-m" "clj.fr.web/export"]}

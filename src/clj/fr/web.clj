@@ -18,7 +18,7 @@
             [clj.fr.highlight :refer  [highlight-code-blocks]]
             [clj.fr.post :refer [create-post]]
             [clj.fr.git :refer :all]
-            [clj.fr.picture :refer [picture]]))
+            [clj.fr.picture :as picture :refer [convert-to-srcset]]))
 
 ;; ---
 ;; Helpers
@@ -61,17 +61,17 @@
               :rel "apple-touch-icon-precomposed"}])
           [152 144 114 96 72])
 
-     [:link {:href (link/file-path request (str "/appicon-precomposed.png")) 
+     [:link {:href (link/file-path request (str "/appicon-precomposed.png"))
              :rel "apple-touch-icon-precomposed"}]
-     "<!--[if gte IE 9]>\n  <style type=\"text/css\">\n    .core, .endcap, .wraps {\n       filter: none;\n    }\n  </style>\n<![endif]-->" 
+     "<!--[if gte IE 9]>\n  <style type=\"text/css\">\n    .core, .endcap, .wraps {\n       filter: none;\n    }\n  </style>\n<![endif]-->"
      [:script {:src "/js/modernizr.js" :type "text/javascript"}]
      [:script
       {:type "text/javascript"}
       "\n Modernizr.load({\n test: Modernizr.srcset,\n nope: '/js/srcset.js'\n },{\n test: Modernizr.vhunit,\n nope: '/js/viewport.js'\n });\n"]]
     [:body
      [:header.core
-      [:h1.logo 
-       [:a {:href "/"} 
+      [:h1.logo
+       [:a {:href "/"}
         [:span.pa "("]
         [:span.wa "first"] " "
         [:span.pb "("]
@@ -89,7 +89,7 @@
        [:a {:href "/about.html"} "About"]
        [:a {:href "/longform.html"} "Longform"]
        [:a {:href "/shortform.html"} "Shortform"]
-       [:a {:href "/connections.html"} "Connections"]]]     
+       [:a {:href "/connections.html"} "Connections"]]]
      [:section.wraps
       page]
      [:footer.endcap "&copy; First Rest &amp; Boris Kourtoukov " (t/year (t/today))]]))
@@ -102,8 +102,8 @@
   [:a  {:href  (str "/connections/" connection ".html")} connection])
 
 (defn connect  [connections]
-  (reduce #(conj %1 ", "  (make-connection %2))  
-          (make-connection  (first connections))  
+  (reduce #(conj %1 ", "  (make-connection %2))
+          (make-connection  (first connections))
           (rest connections)))
 
 ;; ---
@@ -112,10 +112,10 @@
 
 (defn single-item [request {:keys  [title connections date path content]}]
   (wrapper request title
-           [:article.page 
+           [:article.page
             [:header
              [:h2.page__title title]
-             (when connections 
+             (when connections
                [:span.tags (connect connections)])
              " "
              (when date
@@ -151,12 +151,12 @@
       (map archive-group post-groups)]]))
 
 (defn archive [request posts title]
-  (wrapper request title 
+  (wrapper request title
            (archive-like request posts title)))
 
-(defn home 
+(defn home
   "Home is a type of archive"
-  [request longform shortform] 
+  [request longform shortform]
   (wrapper request "core"
            (html [:header.home--intro "Welcome! These pages will speak to functional
                                       programming, Clojure, ClojureScript, game and web development,
@@ -176,7 +176,7 @@
   [:h3.archive__title--single  [:a  {:href path} title]])
 
 (defn connection-entry  [connection posts]
-  (let  [sorted (reverse  (sort-by :date posts)) 
+  (let  [sorted (reverse  (sort-by :date posts))
          filtered (filter #(seq-contains? (% :connections) connection) sorted)]
     (cons
       [:h2.archive__title--single (make-connection connection)]
@@ -248,11 +248,12 @@
        :connections     (create-connection-pages posts)})))
 
 (defn prepare-page  [page req]
-  (->  (if  (string? page) page  (page req)) 
-      highlight-code-blocks))
+   (->  (if  (string? page) page  (page req))
+                          highlight-code-blocks
+                          (convert-to-srcset req)))
 
 (defn prepare-pages  [pages]
-  (zipmap (keys pages)  
+  (zipmap (keys pages)
           (map #(partial prepare-page %) (vals pages))))
 
 (defn get-pages  []
@@ -265,42 +266,38 @@
 (defn get-assets  []
   (assets/load-assets "public"  [#".*"]))
 
-(defn optimize [assets options]
+(defn optimize
+  "Have not been able to map over transform images here."
+  [assets options]
   (-> assets
       (transform-images {:regexp #"/post-assets/.*\.jpg"
                          :quality 0.7
                          :width 1020
                          :prefix "1020-"
-                         :tmp-dir "temper"
                          :progressive true})
       (transform-images {:regexp #"/post-assets/.*\.jpg"
                          :quality 0.7
                          :width 860
                          :prefix "860-"
-                         :tmp-dir "temper"
                          :progressive true})
       (transform-images {:regexp #"/post-assets/.*\.jpg"
                          :quality 0.7
                          :width 600
                          :prefix "600-"
-                         :tmp-dir "temper"
                          :progressive true})
       (transform-images {:regexp #"/post-assets/.*\.jpg"
                          :quality 0.7
                          :width 400
                          :prefix "400-"
-                         :tmp-dir "temper"
                          :progressive true})
       (transform-images {:regexp #"/post-assets/.*\.jpg"
                          :quality 0.7
                          :width 200
                          :prefix "200-"
-                         :tmp-dir "temper"
                          :progressive true})
       (transform-images {:regexp #"/post-assets/.*\.jpg"
                          :quality 0.6
                          :width 904
-                         :tmp-dir "temper"
                          :progressive true})
       (optimizations/all options)))
 
@@ -308,8 +305,8 @@
 ;; Ring App
 ;; ---
 
-(def app (-> (stasis/serve-pages get-pages)  
-             (optimus/wrap 
+(def app (-> (stasis/serve-pages get-pages)
+             (optimus/wrap
                get-assets
                optimize
                serve-live-assets)
