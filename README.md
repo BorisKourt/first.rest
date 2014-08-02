@@ -9,9 +9,10 @@
 Although the system currently works, the following will be helpful in the long run:
 
 - [X] Create <picture> support - added base srcset instead.
+- [ ] Separate Dev from Prod builds, to speed up development.
 - [ ] Add WebP support
 - [ ] Add RSS feeds via clj-rss
-- [ ] Adjust post meta to use edn/transit
+- [X] Adjust post meta to use edn
 - [ ] Revise Shortform rendering and format
 - [X] Check for git integration
 - [ ] Append git blame output to post

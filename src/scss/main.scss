@@ -20,7 +20,7 @@ body {
 	min-height: 100%;
 
 	@include background-image('background');
-	
+
 	@include bp-two {
 		font-size: 16px;
 	}
@@ -123,7 +123,7 @@ h1,h2,h3,h4,h5,h6,th {
 	span {
 		display: inline-block;
 	}
-	
+
 	.pa {
 		color: #91DC47;
 	}
@@ -131,7 +131,7 @@ h1,h2,h3,h4,h5,h6,th {
 	.pb {
 		color: #90B4FE;
 	}
-	
+
 	.wa, .wb {
 		font-weight: 500;
 	}
@@ -162,7 +162,7 @@ h1,h2,h3,h4,h5,h6,th {
 
 	h2 {
 		font-size: 2.2em;
-		line-height: 1em;
+		line-height: 1.2em;
 		margin-bottom: 0.2em;
 	}
 	span {
@@ -181,15 +181,15 @@ h1,h2,h3,h4,h5,h6,th {
 
 .main {
 	@include bp-two {
-	width: 60%;
-	padding-right: 10%;
+		width: 60%;
+		padding-right: 10%;
 	}
 }
 
 .right {
 	@include bp-two {
-	width: 40%;
-}
+		width: 40%;
+	}
 }
 
 .archive__title {
@@ -197,17 +197,20 @@ h1,h2,h3,h4,h5,h6,th {
 	margin-bottom: 1em;
 	padding-top: 0.6em;
 	text-transform: capitalize;
+	line-height: 1.2em;
 }
 
 .archive__title--date {
 	font-size: 1.2em;
 	font-style: italic;
 	margin-bottom: 1em;
+	line-height: 1.2em;
 }
 
 .archive__title--single {
 	margin-bottom: 0.4em;
 	text-transform: capitalize;
+	line-height: 1.2em;
 }
 
 .archive__content {
@@ -216,7 +219,7 @@ h1,h2,h3,h4,h5,h6,th {
 
 .archive__post {
 	margin-bottom: 1em;
-	
+
 	span, time {
 		font-size: 0.8em;
 		color: #888;

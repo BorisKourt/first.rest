@@ -1,6 +1,8 @@
----
-title : Hello World!
-connections : [log]
----
+<!--
+{
+:title "First Microblog"
+:connections []
+}
+-->
 
 Hello World!
