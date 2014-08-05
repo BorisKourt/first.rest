@@ -154,7 +154,13 @@ h1,h2,h3,h4,h5,h6,th {
 .page__content {
 	@extend %con;
 }
-
+.page__data {
+	margin: 1em 0;
+	font-size: 0.8em;
+	a {
+		@extend %codefonts;
+	}
+}
 .page > header{
 
 	padding-top: 1em;	
@@ -194,31 +200,38 @@ h1,h2,h3,h4,h5,h6,th {
 
 .archive__title {
 	font-size: 1.6em;
-	margin-bottom: 1em;
+	margin-bottom: 0.8em;
 	padding-top: 0.6em;
 	text-transform: capitalize;
 	line-height: 1.2em;
 }
 
 .archive__title--date {
-	font-size: 1.2em;
+	font-size: 1.4em;
 	font-style: italic;
-	margin-bottom: 1em;
+	margin-bottom: 0.8em;
 	line-height: 1.2em;
 }
 
 .archive__title--single {
 	margin-bottom: 0.4em;
 	text-transform: capitalize;
-	line-height: 1.2em;
+	line-height: 1.4em;
+	font-size: 1.2em;
 }
-
+.archive__meta {
+	padding-bottom: 0.5em;
+}
 .archive__content {
 	margin-bottom: 1em;
+
+	.page__content {
+		font-size: 0.9em;
+	}
 }
 
 .archive__post {
-	margin-bottom: 1em;
+	margin-bottom: 1.4em;
 
 	span, time {
 		font-size: 0.8em;

@@ -18,7 +18,8 @@
             [clj.fr.highlight :refer  [highlight-code-blocks]]
             [clj.fr.post :refer [create-post]]
             [clj.fr.git :refer :all]
-            [clj.fr.picture :as picture :refer [convert-to-srcset]]))
+            [clj.fr.picture :as picture :refer [convert-to-srcset]]
+            [clj.fr.feed :as feed]))
 
 ;; ---
 ;; Helpers
@@ -47,6 +48,21 @@
               :content "width=device-width, initial-scale=1.0"}]
      [:title (str "(first (rest)) " (when title (str "; " title)))]
      [:link  {:rel "stylesheet" :href  (link/file-path request "/styles/main.css") :type "text/css"}]
+     [:link
+      {:title "Full Atom Feed"
+       :href "/feed.xml"
+       :type "application/atom+xml"
+       :rel "alternate"}]
+     [:link
+      {:title "Longform logs Atom feed"
+       :href "/longform/feed.xml"
+       :type "application/atom+xml"
+       :rel "alternate"}]
+     [:link
+      {:title "Shortform logs Atom feed"
+       :href "/shortform/feed.xml"
+       :type "application/atom+xml"
+       :rel "alternate"}]
      [:link  {:rel "icon" :href  (link/file-path request "/images/favicon.ico") :type "image/x-icon"}]
      [:link
       {:type "text/css",
@@ -81,12 +97,12 @@
       [:nav.core__navigation--dropdown
        [:a "Menu"]
        [:section.dropdown__content
-        [:a {:href "/about.html"} "About"]
+        [:a {:href "/context.html"} "Context"]
         [:a {:href "/longform.html"} "Longform"]
         [:a {:href "/shortform.html"} "Shortform"]
         [:a {:href "/connections.html"} "Connections"]]]
       [:nav.core__navigation
-       [:a {:href "/about.html"} "About"]
+       [:a {:href "/context.html"} "Context"]
        [:a {:href "/longform.html"} "Longform"]
        [:a {:href "/shortform.html"} "Shortform"]
        [:a {:href "/connections.html"} "Connections"]]]
@@ -110,31 +126,37 @@
 ;; Single post template
 ;; ---
 
-(defn single-item [request {:keys  [title connections date path content]}]
+(defn single-item [request {:keys  [title connections date path content commit]}]
   (wrapper request title
            [:article.page
             [:header
              [:h2.page__title title]
+             [:p.page__meta
              (when connections
                [:span.tags (connect connections)])
              " "
              (when date
-               [:span.date [:time  {:datetime date}  (monthf date) " "  (dayf date) ", "  (yearf date)]])]
-            [:section.page__content content]]))
+               [:span.date [:time  {:datetime date}  (monthf date) " "  (dayf date) ", "  (yearf date)]])]]
+            [:section.page__content content]
+            [:footer.page__data
+            (when commit 
+             [:span "Last edited at: "
+              [:a {:href (str "https://github.com/BorisKourt/first.rest/commit/" commit)} commit]])]]))
 
 ;; ---
 ;; Archives templates & functionality
 ;; ---
 
-(defn archive-post  [{:keys  [title date connections path]}]
+(defn archive-post  [{:keys  [title date connections path description]}]
   [:article.archive__post
    [:h1.archive__title--single  [:a  {:href path} title]]
-   [:time  {:datetime date}
-    [:span.month  (monthf date)] " "
-    [:span.day  (dayf date)] ", "
-    [:span.year  (yearf date)]] " "
-   (when  (not-empty connections)
-     [:span.links "connections: "  (connect connections)])])
+   [:p.archive__meta
+    [:time  {:datetime date}
+     [:span.month  (monthf date)] " "
+     [:span.day  (dayf date)] ", "
+     [:span.year  (yearf date)]] " "
+    (when  (not-empty connections)
+      [:span.links "connections: "  (connect connections)])]])
 
 (defn archive-group  [[year posts]]
   (let  [sorted-posts  (reverse  (sort-by :path posts))]
@@ -157,7 +179,7 @@
 (defn home
   "Home is a type of archive"
   [request longform shortform]
-  (wrapper request "core"
+  (wrapper request "Core"
            (html [:header.home--intro "Welcome! These pages will speak to functional
                                       programming, Clojure, ClojureScript, game and web development,
                                       as well as anything that can play a role in tying these together. "
@@ -185,7 +207,7 @@
 
 (defn connections  [request posts]
   (let  [unique-connections  (->> posts  (map :connections) flatten distinct sort)]
-    (wrapper request "connections"
+    (wrapper request "Connections"
              [:section.archive
               [:header.archive__header
                [:h1.archive__title "Connections"]]
@@ -230,7 +252,9 @@
    "/longform.html"  (fn  [req]  (archive req long-posts "Longform"))
    "/shortform.html"  (fn  [req]  (archive req short-posts "Shortform"))
    "/connections.html" (fn  [req]  (connections req posts))
-   })
+   "/feed.xml" (fn [req] (feed/atom-xml posts "All content" "feed.xml"))
+   "/longform/feed.xml" (fn [req] (feed/atom-xml long-posts "Shortform feed" "longform/feed.xml"))
+   "/shortform/feed.xml" (fn [req] (feed/atom-xml short-posts "Longform feed" "shortform/feed.xml"))})
 
 (defn gen-posts-from-type [kind]
   (let [location (str "resources/" kind)]

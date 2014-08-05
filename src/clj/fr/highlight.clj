@@ -24,4 +24,3 @@
                    [:pre :code] highlight
                    [:pre :code] #(assoc-in %  [:attrs :class] "highlight")))
   ([page extra] page))
-
