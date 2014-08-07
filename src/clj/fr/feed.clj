@@ -1,35 +1,41 @@
 (ns clj.fr.feed
   (:require [clojure.data.xml :as xml]
-            [hiccup.page :as page]))
+            [clj-template.html5 :as <!]
+            [clojure.string :as str]
+            [hiccup.page :as hpage :refer [html5]]
+            [clj-time.core :as t]
+            [clj.fr.tags :as <-]))
 
-(defn- entry [post]
-  [:entry 
-   [:title (:title post)]
-   [:updated (:date post)]
-   [:author [:name "Boris Kourtoukov"]]
-   [:link {:href (:link post)}]
-   [:id (str "urn:first-rest:feed:post:" (clojure.string/lower-case 
-                                           (clojure.string/replace (:title post) #" " "-")))]
-   [:content {:type "html"} (:content post)]])
+(defn feed-entry [{:keys [title link description date connections]}]
+  (<-/entry>
+    (<!/title title)
+    (<!/link {:href link :rel "alternate" :type "text/html"})
+    (<-/updated> (str date))
+    (<-/author>
+      (<-/name> "Boris Kourtoukov")
+      (<-/uri>  "http://boris.kourtoukov.com/"))
+    (<-/id> link)
+    (apply str (map #(<-/category-> {:term %}) connections))
+    (<-/content> {:src link :type "text/html"})
+    (<-/summary> {:type "html"}
+                 (str "<![CDATA[ " description " ]]>"))))
 
-(defn atom-xml [posts kind path]
-  (let [items (first (partition 10 10 {} posts))]
-    (xml/emit-str
-      (xml/sexp-as-element
-        [:feed 
-         [:id "urn:first-rest:feed"]
-         [:updated (-> posts first :date)]
-         [:title {:type "text"} (str "(First (Rest)) ; " kind)]
-         [:link {:rel "self" :href (str "http://first.rest/" path)}]
-         (map entry posts)]))))
-
-(comment
-  (ns clj.fr.feed
-    (:require [clj-rss.core :as rss]))
-
-  (defn rss-feed [posts kind]
-    (let [items (first (partition 10 10 {} posts))
-          rss-list (map #(select-keys % [:title :link :description]) items)]
-      (rss/channel-xml  {:title "first.rest" :link "http://first.rest/" :description ""}
-                       rss-list))))
-
+(defn feed [posts kind path]
+  (str
+    (hpage/xml-declaration "utf-8")
+    (<-/feed> {:xmlns "http://www.w3.org/2005/Atom"}
+              (<!/title     {:type "text" :xml:lang "en"}
+                        (str "(first (rest)) ; " kind))
+              (<-/subtitle> {:type "html"}
+                            "Talking about Clojure, ClojureScript, and programming in general")
+              (<!/link      {:type "application/atom+xml"
+                             :href (str "http://first.rest" path)
+                             :rel "self"})
+              (<-/updated>  (-> posts first :date str))
+              (<-/icon>    "http://first.rest/images/appicon-72x72-precomposed.png")
+              (<-/id>       "http://first.rest/")
+              (<-/author>
+                (<-/name>   "Boris Kourtoukov")
+                (<-/uri>    "http://boris.kourtoukov.com/"))
+              (<-/rights>   (str "copyright (c) " (t/year (t/today)) " first.rest and Boris Kourtoukov"))
+              (apply str    (map feed-entry posts)))))

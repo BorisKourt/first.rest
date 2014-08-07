@@ -157,6 +157,7 @@ h1,h2,h3,h4,h5,h6,th {
 .page__data {
 	margin: 1em 0;
 	font-size: 0.8em;
+	line-height: 1.4em;
 	a {
 		@extend %codefonts;
 	}

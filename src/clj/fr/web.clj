@@ -11,15 +11,16 @@
             [clj-time.format :as tf]
             [clj-time.core :as t]
             [hiccup.core :refer [html]]
-            [hiccup.page :refer  [html5]]
+            [hiccup.page :as hpage :refer  [html5]]
             [me.raynes.cegdown :as md]
             [ring.middleware.content-type :refer  [wrap-content-type]]
             [stasis.core :as stasis]
+            [net.cgrand.enlive-html :as enlive :refer [deftemplate defsnippet]]
             [clj.fr.highlight :refer  [highlight-code-blocks]]
             [clj.fr.post :refer [create-post]]
             [clj.fr.git :refer :all]
             [clj.fr.picture :as picture :refer [convert-to-srcset]]
-            [clj.fr.feed :as feed]))
+            [clj.fr.feed :refer [feed]]))
 
 ;; ---
 ;; Helpers
@@ -37,10 +38,38 @@
   (tf/unparse  (tf/formatter "yyyy") date))
 
 ;; ---
-;; Core Template, wraps all other pages.
+;; core template, wraps all other pages.
 ;; ---
 
-(defn wrapper [request title page]
+
+(deftemplate wrapper (enlive/html-resource "templates/wrapper.html")
+  [_ _ _])
+
+(comment
+(deftemplate wrapper {:parser enlive/xml-parser} (ch/parse "resources/templates/wrapper.html")
+  [request title page]
+  [:#main-css] (enlive/set-attr :href (link/file-path request "/style/main.css"))
+  [:title] (enlive/content (str "(first (rest)) " (when title (str "; " title))))
+  [:head] (enlive/append
+             (html (map (fn [a & rest]
+                          [:link
+                           {:href (link/file-path
+                                    request
+                                    (str "/images/appicon-" a "x" a "-precomposed.png"))
+                            :sizes (str  a "x" a )
+                            :rel "apple-touch-icon-precomposed"}])
+                        [152 144 114 96 72])
+                   [:link {:href (link/file-path
+                                   request
+                                   (str "/appicon-precomposed.png"))
+                           :rel "apple-touch-icon-precomposed"}]
+                   [:link  {:rel "icon"
+                            :href  (link/file-path request "/images/favicon.ico")
+                            :type "image/x-icon"}]))
+  [:.wraps]  (enlive/html-content (html page))
+  [:.endcap] (enlive/content (str "&copy; First.Rest &amp; Boris Kourtoukov " (t/year (t/today))))))
+
+(defn zwrapper [request title page]
   (html5
     [:head
      [:meta  {:charset "utf-8"}]
@@ -48,27 +77,31 @@
               :content "width=device-width, initial-scale=1.0"}]
      [:title (str "(first (rest)) " (when title (str "; " title)))]
      [:link  {:rel "stylesheet" :href  (link/file-path request "/styles/main.css") :type "text/css"}]
-     [:link
+     (comment [:link
       {:title "Full Atom Feed"
        :href "/feed.xml"
        :type "application/atom+xml"
        :rel "alternate"}]
      [:link
       {:title "Longform logs Atom feed"
-       :href "/longform/feed.xml"
+       :href "/longform.xml"
        :type "application/atom+xml"
        :rel "alternate"}]
      [:link
       {:title "Shortform logs Atom feed"
-       :href "/shortform/feed.xml"
+       :href "/shortform.xml"
        :type "application/atom+xml"
-       :rel "alternate"}]
-     [:link  {:rel "icon" :href  (link/file-path request "/images/favicon.ico") :type "image/x-icon"}]
+       :rel "alternate"}])
      [:link
       {:type "text/css",
        :rel "stylesheet",
        :href
        "http://fonts.googleapis.com/css?family=Roboto:400,400italic,700,700italic"}]
+     "<!--[if gte IE 9]>\n  <style type=\"text/css\">\n    .core, .endcap, .wraps {\n       filter: none;\n    }\n  </style>\n<![endif]-->"
+     [:script {:src "/js/modernizr.js" :type "text/javascript"}]
+     [:script
+      {:type "text/javascript"}
+      "\n Modernizr.load({\n test: Modernizr.srcset,\n nope: '/js/srcset.js'\n },{\n test: Modernizr.vhunit,\n nope: '/js/viewport.js'\n });\n"]
 
      (map (fn [a & rest]
             [:link
@@ -79,11 +112,7 @@
 
      [:link {:href (link/file-path request (str "/appicon-precomposed.png"))
              :rel "apple-touch-icon-precomposed"}]
-     "<!--[if gte IE 9]>\n  <style type=\"text/css\">\n    .core, .endcap, .wraps {\n       filter: none;\n    }\n  </style>\n<![endif]-->"
-     [:script {:src "/js/modernizr.js" :type "text/javascript"}]
-     [:script
-      {:type "text/javascript"}
-      "\n Modernizr.load({\n test: Modernizr.srcset,\n nope: '/js/srcset.js'\n },{\n test: Modernizr.vhunit,\n nope: '/js/viewport.js'\n });\n"]]
+     [:link  {:rel "icon" :href  (link/file-path request "/images/favicon.ico") :type "image/x-icon"}]]
     [:body
      [:header.core
       [:h1.logo
@@ -108,7 +137,7 @@
        [:a {:href "/connections.html"} "Connections"]]]
      [:section.wraps
       page]
-     [:footer.endcap "&copy; First Rest &amp; Boris Kourtoukov " (t/year (t/today))]]))
+     [:footer.endcap "&copy; First.Rest &amp; Boris Kourtoukov " (t/year (t/today))]]))
 
 ;; ---
 ;; Connection helpers
@@ -139,9 +168,10 @@
                [:span.date [:time  {:datetime date}  (monthf date) " "  (dayf date) ", "  (yearf date)]])]]
             [:section.page__content content]
             [:footer.page__data
-            (when commit 
-             [:span "Last edited at: "
-              [:a {:href (str "https://github.com/BorisKourt/first.rest/commit/" commit)} commit]])]]))
+            (when commit
+             [:span "Last edited: "
+              [:a {:href (str "https://github.com/BorisKourt/first.rest/commit/" commit)
+                   :target "_blank"} commit]])]]))
 
 ;; ---
 ;; Archives templates & functionality
@@ -183,7 +213,7 @@
            (html [:header.home--intro "Welcome! These pages will speak to functional
                                       programming, Clojure, ClojureScript, game and web development,
                                       as well as anything that can play a role in tying these together. "
-                  [:a {:href "/about.html" :alt "about"} "More information &raquo;"]]
+                  [:a {:href "/context.html" :alt "about"} "More information &raquo;"]]
                  [:section.main (archive-like request longform "Longform")]
                  [:aside.right  (archive-like request shortform "Shortform")])))
 
@@ -251,37 +281,57 @@
   {"/index.html"       (fn  [req]  (home req long-posts short-posts))
    "/longform.html"  (fn  [req]  (archive req long-posts "Longform"))
    "/shortform.html"  (fn  [req]  (archive req short-posts "Shortform"))
-   "/connections.html" (fn  [req]  (connections req posts))
-   "/feed.xml" (fn [req] (feed/atom-xml posts "All content" "feed.xml"))
-   "/longform/feed.xml" (fn [req] (feed/atom-xml long-posts "Shortform feed" "longform/feed.xml"))
-   "/shortform/feed.xml" (fn [req] (feed/atom-xml short-posts "Longform feed" "shortform/feed.xml"))})
+   "/connections.html" (fn  [req]  (connections req posts))})
+
+(defn create-feed-pages [{:keys [long-posts short-posts all-posts] :as post-map}]
+  {"/feed.atom"      (fn [req] (feed all-posts "All content" "/feed.atom"))
+   "/longform.atom"  (fn [req] (feed long-posts "Longform feed" "/longform.atom"))
+   "/shortform.atom" (fn [req] (feed short-posts "Shortform feed" "/shortform.atom"))})
+
+(defn setup-html-pages  [{:keys [long-posts short-posts all-posts]}]
+  (stasis/merge-page-sources
+    {:partials     (partial-pages  (stasis/slurp-directory "resources/partials" #".*\.html$"))
+     :dynamic      (create-dynamic-pages long-posts short-posts all-posts)
+     :longform     (layout-posts long-posts)
+     :shortform    (layout-posts short-posts)
+     :connections  (create-connection-pages all-posts)}))
+
+(defn setup-data-pages  [{:keys [long-posts short-posts all-posts] :as post-map}]
+  (stasis/merge-page-sources
+    {;:hrobots (create-hrobots-pages all-posts)
+     :feeds   (create-feed-pages post-map)
+     ;:sitemap (create-sitemap all-posts)
+     }))
+
+(defn prepare-html-page  [page req]
+  (->  (if  (string? page) page  (page req))
+      highlight-code-blocks
+      (convert-to-srcset req)))
+
+(defn prepare-html-pages  [pages]
+  (zipmap (keys pages)
+          (map #(partial prepare-html-page %) (vals pages))))
 
 (defn gen-posts-from-type [kind]
   (let [location (str "resources/" kind)]
     (map #(create-post kind %) (stasis/slurp-directory location #"\.md$"))))
 
-(defn get-raw-pages  []
-  (let [long-posts (gen-posts-from-type "longform")
-        short-posts (gen-posts-from-type "shortform")
-        posts      (concat long-posts short-posts)]
-    (stasis/merge-page-sources
-      {:partials (partial-pages  (stasis/slurp-directory "resources/partials" #".*\.html$"))
-       :dynamic  (create-dynamic-pages long-posts short-posts posts)
-       :longform     (layout-posts long-posts)
-       :shortform     (layout-posts short-posts)
-       :connections     (create-connection-pages posts)})))
+(defn resort-posts [posts]
+  (->> posts
+       (sort-by :date)
+       reverse))
 
-(defn prepare-page  [page req]
-   (->  (if  (string? page) page  (page req))
-                          highlight-code-blocks
-                          (convert-to-srcset req)))
-
-(defn prepare-pages  [pages]
-  (zipmap (keys pages)
-          (map #(partial prepare-page %) (vals pages))))
+(defn get-content-pages []
+  (let [long-posts  (resort-posts (gen-posts-from-type "longform"))
+        short-posts (resort-posts (gen-posts-from-type "shortform"))
+        posts       (resort-posts (concat long-posts short-posts))]
+    {:long-posts long-posts :short-posts short-posts :all-posts posts}))
 
 (defn get-pages  []
-  (prepare-pages  (get-raw-pages)))
+  (let [content-pages (get-content-pages)]
+    (stasis/merge-page-sources
+      {:html (prepare-html-pages (setup-html-pages content-pages))
+       :data (setup-data-pages content-pages)})))
 
 ;; ---
 ;; Assets
@@ -329,12 +379,13 @@
 ;; Ring App
 ;; ---
 
-(def app (-> (stasis/serve-pages get-pages)
-             (optimus/wrap
-               get-assets
-               optimize
-               serve-live-assets)
-             wrap-content-type))
+(defn server [req]
+  (-> (stasis/serve-pages get-pages)
+      (optimus/wrap
+        get-assets
+        optimize
+        serve-live-assets)
+      wrap-content-type))
 
 ;; ---
 ;; Static Export Setup
@@ -344,6 +395,10 @@
 
 (defn export  []
   (let  [assets  (optimize  (get-assets)  {})]
+    (println "Assets Loaded")
     (stasis/empty-directory! export-dir)
+    (println "Directory Emptied")
     (optimus.export/save-assets assets export-dir)
-    (stasis/export-pages  (get-pages) export-dir  {:optimus-assets assets})))
+    (println "Assets Exported")
+    (stasis/export-pages  (get-pages) export-dir  {:optimus-assets assets})
+    (println "Pages Exported")))

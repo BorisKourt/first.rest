@@ -22,6 +22,9 @@ Although the system currently works, the following will be helpful in the long r
 - [ ] Output changes on build
 - [ ] Generate robots and humans .txt files
 - [ ] Create a comprehensive list of utilized resources
+- [ ] Add meta
+- [ ] Create enlive templates for layouts
+- [ ] Decouple page acquisition and page rendering.
 
 ## Details
 

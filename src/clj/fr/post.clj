@@ -3,7 +3,12 @@
             [me.raynes.cegdown :as md]
             [clj-time.format :as tf]
             [clojure.edn :as edn]
-            [clj.fr.git :refer [file-commit-hash]]))
+            [clj.fr.git :refer [file-commit-hash]]
+            [optimus.link :as link]
+            [clojure.string :as str]
+            [optimus.paths :as path]
+            [pathetic.core :as pathetic]
+            [net.cgrand.enlive-html :as enlive]))
 
 (def formatter  (tf/formatter "yyyy-MM-dd"))
 
@@ -27,13 +32,31 @@
 (defn more-link [path content]
   (str content "&hellip; [Full text &raquo;](http://first.rest" path ")"))
 
+(defn prepare-image [node]
+  (let [src (->> node :attrs :src)
+        alt (->> node :attrs :alt)
+        path (path/just-the-path src)]
+    (if (pathetic/absolute-path? src)
+      (assoc node
+             :attrs
+             {:src (str "http://first.rest" (str/replace src "/resources/public" ""))
+              :alt (if alt alt "")})
+      node)))
+
+(defn adjustments [page]
+  (enlive/sniptest page
+                   [:img] #(prepare-image %)
+                   )
+  )
+
 (defn extract-excerpt [page path]
-  (->> page 
-       sans-meta 
-       string/split-lines 
+  (->> page
+       sans-meta
+       string/split-lines
        (take 6)
-       (string/join "\n") 
-       mdown))
+       (string/join "\n")
+       mdown
+       adjustments))
 
 (defn extract-edn [page]
   (->> page (re-seq #"(?is)^<!--(.*?)-->") first second edn/read-string))
@@ -46,7 +69,7 @@
      :connections  (or (:connections meta-section) [])
      :date  (extract-date raw-path)
      :path path
-     :link (str "http://first.rest/" path)
+     :link (str "http://first.rest" path)
      :commit (second (string/split (str commit) #" "))
      :content  (mdown (sans-meta raw-content))
      :description (extract-excerpt raw-content path)}))
