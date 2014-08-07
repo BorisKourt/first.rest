@@ -11,7 +11,7 @@
             [clj-time.format :as tf]
             [clj-time.core :as t]
             [hiccup.core :refer [html]]
-            [hiccup.page :as hpage :refer  [html5]]
+            [hiccup.page :as hpage :refer [html5]]
             [me.raynes.cegdown :as md]
             [ring.middleware.content-type :refer  [wrap-content-type]]
             [stasis.core :as stasis]
