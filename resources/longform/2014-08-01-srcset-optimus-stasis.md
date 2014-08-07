@@ -5,8 +5,6 @@
 }
 -->
 
-![Swiss](/resources/public/post-assets/switzerland.jpg)
-
 As I work on creating this site I want to document some bits of progress that others will hopefully find useful. 
 
 One of the topics I want to focus on while using a static site generator is end user page speed. Although still in early browser support stages the `srcset` attribute in html `<img>` tags is a great way to help lower the bandwidth that, especially mobile, users will have to incur. (A shim helps fill in support gaps)

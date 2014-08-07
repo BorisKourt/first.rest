@@ -41,8 +41,7 @@
 ;; core template, wraps all other pages.
 ;; ---
 
-
-(deftemplate wrapper (enlive/html-resource "templates/wrapper.html")
+(comment deftemplate wrapper (enlive/html-resource "templates/wrapper.html")
   [_ _ _])
 
 (comment
@@ -69,7 +68,7 @@
   [:.wraps]  (enlive/html-content (html page))
   [:.endcap] (enlive/content (str "&copy; First.Rest &amp; Boris Kourtoukov " (t/year (t/today))))))
 
-(defn zwrapper [request title page]
+(defn wrapper [request title page]
   (html5
     [:head
      [:meta  {:charset "utf-8"}]
@@ -77,21 +76,21 @@
               :content "width=device-width, initial-scale=1.0"}]
      [:title (str "(first (rest)) " (when title (str "; " title)))]
      [:link  {:rel "stylesheet" :href  (link/file-path request "/styles/main.css") :type "text/css"}]
-     (comment [:link
-      {:title "Full Atom Feed"
-       :href "/feed.xml"
+     [:link
+      {:title "Full site Atom feed"
+       :href "/feed.atom"
        :type "application/atom+xml"
        :rel "alternate"}]
      [:link
-      {:title "Longform logs Atom feed"
-       :href "/longform.xml"
+      {:title "Only longform logs Atom feed"
+       :href "/longform.atom"
        :type "application/atom+xml"
        :rel "alternate"}]
      [:link
-      {:title "Shortform logs Atom feed"
-       :href "/shortform.xml"
+      {:title "Only shortform Atom feed"
+       :href "/shortform.atom"
        :type "application/atom+xml"
-       :rel "alternate"}])
+       :rel "alternate"}]
      [:link
       {:type "text/css",
        :rel "stylesheet",
@@ -110,7 +109,7 @@
               :rel "apple-touch-icon-precomposed"}])
           [152 144 114 96 72])
 
-     [:link {:href (link/file-path request (str "/appicon-precomposed.png"))
+     [:link {:href (link/file-path request (str "/images/appicon-precomposed.png"))
              :rel "apple-touch-icon-precomposed"}]
      [:link  {:rel "icon" :href  (link/file-path request "/images/favicon.ico") :type "image/x-icon"}]]
     [:body
@@ -213,7 +212,7 @@
            (html [:header.home--intro "Welcome! These pages will speak to functional
                                       programming, Clojure, ClojureScript, game and web development,
                                       as well as anything that can play a role in tying these together. "
-                  [:a {:href "/context.html" :alt "about"} "More information &raquo;"]]
+                  [:a {:href "/context.html" :title "The Context"} "More information &raquo;"]]
                  [:section.main (archive-like request longform "Longform")]
                  [:aside.right  (archive-like request shortform "Shortform")])))
 
