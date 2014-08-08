@@ -18,19 +18,19 @@
 (clj-template.core/assoc-to-fn-unbalanced ["category"])
 
 ;; Atom feed specific XML tags.
-(def feed>      feed)
-(def updated>   updated)
-(def id>        id)
-(def author>    author)
-(def name>      name)
-(def rights>    rights)
-(def entry>     entry)
-(def content>   content)
-(def subtitle>  subtitle)
-(def uri>       uri)
-(def category->  category-)
-(def icon>      icon)
-(def summary>   summary)
+(def feedn      feed)
+(def updatedn   updated)
+(def idn        id)
+(def authorn    author)
+(def namen      name)
+(def rightsn    rights)
+(def entryn     entry)
+(def contentn   content)
+(def subtitlen  subtitle)
+(def urin       uri)
+(def categoryn- category-)
+(def iconn      icon)
+(def summaryn   summary)
 
 ;; Sitemap XML tags.
 

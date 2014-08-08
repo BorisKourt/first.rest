@@ -20,10 +20,10 @@
                  [hickory "0.5.3"]
                  [org.clojure/core.async "0.1.319.0-6b1aca-alpha"]
                  [clj-jgit "0.7.6"]]
-  :plugins [[lein-ancient "0.6.0-SNAPSHOT"]]
-  :aliases {"build-site" ["with-profile" "build" "run"  "-m" "clj.fr.web/export"]}
-  :profiles {:build {:plugins [[lein-marginalia "0.7.1"]]}
-             :server   {:plugins [[lein-ring "0.8.11"]]
+  :plugins [[lein-ancient "0.6.0-SNAPSHOT"]
+            [lein-marginalia "0.7.1"]]
+  :aliases {"build-site" ["run"  "-m" "clj.fr.web/export"]}
+  :profiles {:server   {:plugins [[lein-ring "0.8.11"]]
                         :ring {:handler clj.fr.web/server}}
              :test {:dependencies [[midje "1.6.3"]]
                     :plugins [[lein-midje "3.1.3"]]}})
