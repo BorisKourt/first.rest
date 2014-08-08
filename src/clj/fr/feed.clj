@@ -18,7 +18,13 @@
     (apply str (map #(an/categoryn- {:term %}) connections))
     (an/contentn {:src link :type "text/html"})
     (an/summaryn {:type "html"}
-                 (str "<![CDATA[ " description " ]]>"))))
+                 (str "<![CDATA[ "
+                      description
+                      (dn/a {:href link
+                             :title "the rest, possibily"} "Full Text &raquo;")
+                      (dn/br-)
+                      "-"
+                      " ]]>"))))
 
 (defn feed [posts kind path]
   (str
