@@ -72,7 +72,9 @@
 (defn wrapper
   "Too messy!"
   [request title link page]
-  (html5
+  (html
+    (:html5 hpage/doctype)
+    [:html {:xmlns:og "http://opengraphprotocol.org/schema/"}
     [:head
      [:meta  {:charset "utf-8"}]
 
@@ -83,8 +85,12 @@
 
      ;; Description
 
+     [:meta {:name "title" 
+             :content (str "(first (rest)) " (when title (str "; " title)))}]
      [:meta {:name "description"
              :content "(first (rest)) ; Is a website dedicated to articles on Clojure, ClojureScript, and programming in general."}]
+     [:meta {:name "keywords"
+             :content "Clojure, ClojureScript, Code, Programming, Tutorial, Example, Lisp"}]
 
      ;; Humans and Robots
 
@@ -191,7 +197,7 @@
        [:a {:href "/connections.html"} "Connections"]]]
      [:section.wraps
       page]
-     [:footer.endcap "&copy; First.Rest &amp; Boris Kourtoukov " (t/year (t/today))]]))
+     [:footer.endcap "&copy; First.Rest &amp; Boris Kourtoukov " (t/year (t/today))]]]))
 
 ;; ---
 ;; Connection helpers

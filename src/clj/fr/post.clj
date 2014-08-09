@@ -45,9 +45,7 @@
 
 (defn adjustments [page]
   (enlive/sniptest page
-                   [:img] #(prepare-image %)
-                   )
-  )
+                   [:img] #(prepare-image %)))
 
 (defn extract-excerpt [page path]
   (->> page
