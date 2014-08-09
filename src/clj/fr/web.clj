@@ -20,7 +20,8 @@
             [clj.fr.post :refer [create-post]]
             [clj.fr.git :refer :all]
             [clj.fr.picture :as picture :refer [convert-to-srcset]]
-            [clj.fr.feed :refer [feed]]))
+            [clj.fr.feed :refer [feed]]
+            [clj.fr.text :refer [humans robots]]))
 
 ;; ---
 ;; Helpers
@@ -82,8 +83,15 @@
 
      ;; Description
 
-     [:meta {:name "description" 
+     [:meta {:name "description"
              :content "(first (rest)) ; Is a website dedicated to articles on Clojure, ClojureScript, and programming in general."}]
+
+     ;; Humans and Robots
+
+     [:link {:rel "author"
+             :href "/humans.txt"}]
+     [:link {:rel "robots"
+             :href "/robots.txt"}]
 
      ;; Twitter + OG Meta
 
@@ -335,6 +343,10 @@
    "/longform.atom"  (fn [req] (feed long-posts "Longform feed" "/longform.atom"))
    "/shortform.atom" (fn [req] (feed short-posts "Shortform feed" "/shortform.atom"))})
 
+(defn create-hrobots-pages [{:keys [long-posts short-posts all-posts] :as post-map}]
+  {"/robots.txt" (fn [req] (robots post-map))
+   "/humans.txt" (fn [req] (humans post-map))})
+
 (defn setup-html-pages  [{:keys [long-posts short-posts all-posts]}]
   (stasis/merge-page-sources
     {:partials     (partial-pages  (stasis/slurp-directory "resources/partials" #".*\.html$"))
@@ -345,7 +357,7 @@
 
 (defn setup-data-pages  [{:keys [long-posts short-posts all-posts] :as post-map}]
   (stasis/merge-page-sources
-    {;:hrobots (create-hrobots-pages all-posts)
+    {:hrobots (create-hrobots-pages post-map)
      :feeds   (create-feed-pages post-map)
      ;:sitemap (create-sitemap all-posts)
      }))
