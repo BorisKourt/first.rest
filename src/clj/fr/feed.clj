@@ -37,6 +37,9 @@
               (dn/link      {:type "application/atom+xml"
                              :href (str "http://first.rest" path)
                              :rel "self"})
+              (dn/link      {:type "text/html"
+                             :href "http://first.rest/"
+                             :rel "alternate"})
               (an/updatedn  (-> posts first :date str))
               (an/iconn    "http://first.rest/images/appicon-72x72-precomposed.png")
               (an/idn       "http://first.rest/")

@@ -68,21 +68,54 @@
   [:.wraps]  (enlive/html-content (html page))
   [:.endcap] (enlive/content (str "&copy; First.Rest &amp; Boris Kourtoukov " (t/year (t/today))))))
 
-(defn wrapper [request title page]
+(defn wrapper
+  "Too messy!"
+  [request title link page]
   (html5
     [:head
      [:meta  {:charset "utf-8"}]
+
+     ;; Responsive Device Base
+
      [:meta  {:name "viewport"
               :content "width=device-width, initial-scale=1.0"}]
+
+     ;; Description
+
+     [:meta {:name "description" 
+             :content "(first (rest)) ; Is a website dedicated to articles on Clojure, ClojureScript, and programming in general."}]
+
+     ;; Twitter + OG Meta
+
+     [:meta {:property "twitter:card"
+             :content "summary"}]
+     [:meta {:property "twitter:site"
+             :content "@boriskourt"}]
+     [:meta {:property "twitter:creator"
+             :content "@boriskourt"}]
+     [:meta {:property "og:title"
+             :content title}]
+     [:meta {:property "og:description"
+             :content "Content from (first (rest))"}]
+     [:meta {:property "og:image"
+             :content "http://first.rest/images/appicon-152x152-precomposed.png"}]
+     [:meta {:property "og:url"
+             :content link}]
+
+     ;; End Twitter + OG Meta
+
      [:title (str "(first (rest)) " (when title (str "; " title)))]
      [:link  {:rel "stylesheet" :href  (link/file-path request "/styles/main.css") :type "text/css"}]
+
+     ;; Atom Feeds Per Category
+
      [:link
       {:title "Full site Atom feed"
        :href "/feed.atom"
        :type "application/atom+xml"
        :rel "alternate"}]
      [:link
-      {:title "Only longform logs Atom feed"
+      {:title "Only longform Atom feed"
        :href "/longform.atom"
        :type "application/atom+xml"
        :rel "alternate"}]
@@ -91,16 +124,27 @@
        :href "/shortform.atom"
        :type "application/atom+xml"
        :rel "alternate"}]
+
+     ;; Webfont
+
      [:link
       {:type "text/css",
        :rel "stylesheet",
        :href
        "http://fonts.googleapis.com/css?family=Roboto:400,400italic,700,700italic"}]
+
+     ;; IE9 Tweak
+
      "<!--[if gte IE 9]>\n  <style type=\"text/css\">\n    .core, .endcap, .wraps {\n       filter: none;\n    }\n  </style>\n<![endif]-->"
+
+     ;; Modernity
+
      [:script {:src "/js/modernizr.js" :type "text/javascript"}]
      [:script
       {:type "text/javascript"}
       "\n Modernizr.load({\n test: Modernizr.srcset,\n nope: '/js/srcset.js'\n },{\n test: Modernizr.vhunit,\n nope: '/js/viewport.js'\n });\n"]
+
+     ;; Application Icons
 
      (map (fn [a & rest]
             [:link
@@ -112,6 +156,9 @@
      [:link {:href (link/file-path request (str "/images/appicon-precomposed.png"))
              :rel "apple-touch-icon-precomposed"}]
      [:link  {:rel "icon" :href  (link/file-path request "/images/favicon.ico") :type "image/x-icon"}]]
+
+    ;; Begin Body
+
     [:body
      [:header.core
       [:h1.logo
@@ -154,8 +201,8 @@
 ;; Single post template
 ;; ---
 
-(defn single-item [request {:keys  [title connections date path content commit]}]
-  (wrapper request title
+(defn single-item [request {:keys  [title connections date path link content commit]}]
+  (wrapper request title link
            [:article.page
             [:header
              [:h2.page__title title]
@@ -168,9 +215,10 @@
             [:section.page__content content]
             [:footer.page__data
             (when commit
-             [:span "Last edited: "
+             [:span "Last edited at commit: "
               [:a {:href (str "https://github.com/BorisKourt/first.rest/commit/" commit)
-                   :target "_blank"} commit]])]]))
+                   :target "_blank"
+                   :title "View changes on GitHub"} commit]])]]))
 
 ;; ---
 ;; Archives templates & functionality
@@ -202,13 +250,13 @@
       (map archive-group post-groups)]]))
 
 (defn archive [request posts title]
-  (wrapper request title
+  (wrapper request title "http://first.rest/"
            (archive-like request posts title)))
 
 (defn home
   "Home is a type of archive"
   [request longform shortform]
-  (wrapper request "Core"
+  (wrapper request "Core" "http://first.rest/"
            (html [:header.home--intro "Welcome! These pages will speak to functional
                                       programming, Clojure, ClojureScript, game and web development,
                                       as well as anything that can play a role in tying these together. "
@@ -236,7 +284,7 @@
 
 (defn connections  [request posts]
   (let  [unique-connections  (->> posts  (map :connections) flatten distinct sort)]
-    (wrapper request "Connections"
+    (wrapper request "Connections" "http://first.rest/"
              [:section.archive
               [:header.archive__header
                [:h1.archive__title "Connections"]]
@@ -274,7 +322,7 @@
 
 (defn partial-pages  [pages]
   (zipmap (keys pages)
-          (map #(fn  [req]  (wrapper req false %))  (vals pages))))
+          (map #(fn  [req]  (wrapper req false "http://first.rest/" %))  (vals pages))))
 
 (defn create-dynamic-pages  [long-posts short-posts posts]
   {"/index.html"       (fn  [req]  (home req long-posts short-posts))

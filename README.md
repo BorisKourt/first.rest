@@ -11,7 +11,7 @@ Although the system currently works, the following will be helpful in the long r
 - [X] Create <picture> support - added base srcset instead.
 - [ ] Separate Dev from Prod builds, to speed up development.
 - [ ] Add WebP support
-- [ ] Add Atom feeds - partially finished
+- [X] Add Atom feeds
 - [X] Adjust post meta to use edn
 - [ ] Revise Shortform rendering and format
 - [X] Check for git integration
@@ -22,8 +22,8 @@ Although the system currently works, the following will be helpful in the long r
 - [ ] Output changes on build
 - [ ] Generate robots and humans .txt files
 - [ ] Create a comprehensive list of utilized resources
-- [ ] Add meta
-- [ ] Create enlive templates for layouts
+- [ ] Add meta!
+- [ ] Create enlive? templates for layouts
 - [ ] Decouple page acquisition and page rendering.
 
 ## Details
