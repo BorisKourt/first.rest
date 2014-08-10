@@ -189,11 +189,10 @@ $image-path: '/images' !default;
 	}
 
 	img {
-		max-width: 120%;
-		margin-left: -10%;
-
+		max-width: 100%;
 		height: auto;
 		display: inline-block;
+		margin-bottom: 8px;
 	}
 
 	table {

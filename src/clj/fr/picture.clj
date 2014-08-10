@@ -26,7 +26,7 @@
     (if (pathetic/absolute-path? src)
       (assoc node
              :attrs
-             {:src (link/file-path request src)
+             {:src (str "/post-assets/" (path/just-the-filename src))
               :srcset (build-srcset request (path/just-the-filename src) sizes)
               :sizes  (str "(min-width: " breakpoint "px) 60vw, 80vw)")
               :alt (if alt alt "")
