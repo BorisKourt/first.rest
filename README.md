@@ -8,7 +8,7 @@
 
 Although the system currently works, the following will be helpful in the long run:
 
-- [X] Create <picture> support - added base srcset instead.
+- [X] Create `<picture>` support - added base srcset instead.
 - [ ] Separate Dev from Prod builds, to speed up development.
 - [ ] Add WebP support
 - [X] Add Atom feeds
@@ -20,16 +20,12 @@ Although the system currently works, the following will be helpful in the long r
 - [ ] CLJS for related content browsing
 - [X] Add marginalia
 - [ ] Output changes on build
-- [ ] Generate robots and humans .txt files
+- [X] Generate robots and humans .txt files
 - [ ] Create a comprehensive list of utilized resources
-- [ ] Add meta!
+- [X] Add meta!
 - [ ] Create enlive? templates for layouts
-- [ ] Decouple page acquisition and page rendering.
+- [X] Decouple page acquisition and page rendering.
 
 ## Details
 
 Will be more up-to-date on [the about page.](http://first.rest/context.html)
-
-## Documentation
-
-*Gasp* automated, but! In only the layout. [first.rest/doc](http://first.rest/doc/)

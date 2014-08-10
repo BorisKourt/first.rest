@@ -22,7 +22,7 @@ green     #859900  operators, other keywords
 	padding: 1.2em;
 	max-width: 100%;
 	line-height: 1.2em;
-	border: 1px solid #ddd;
+	box-shadow: 0 0 5px 0 rgba(0,0,0,0.1);
 	@extend %codefonts;
 	font-size: 12px;
 

@@ -35,6 +35,10 @@ h1,h2,h3,h4,h5,h6,th {
 	color: #63B132;
 }
 
+img.optim {
+	box-shadow: 0 0 0 8px rgba(255,255,255,0.95);
+}
+
 .wraps {
 	overflow: auto;
 	@extend %col;

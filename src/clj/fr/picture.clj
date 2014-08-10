@@ -26,9 +26,11 @@
     (if (pathetic/absolute-path? src)
       (assoc node
              :attrs
-             {:srcset (build-srcset request (path/just-the-filename src) sizes)
+             {:src (link/file-path request src)
+              :srcset (build-srcset request (path/just-the-filename src) sizes)
               :sizes  (str "(min-width: " breakpoint "px) 60vw, 80vw)")
-              :alt (if alt alt "")})
+              :alt (if alt alt "")
+              :class "optim"})
       node)))
 
 (defn convert-to-srcset

@@ -85,7 +85,7 @@
 
      ;; Description
 
-     [:meta {:name "title" 
+     [:meta {:name "title"
              :content (str "(first (rest)) " (when title (str "; " title)))}]
      [:meta {:name "description"
              :content "(first (rest)) ; Is a website dedicated to articles on Clojure, ClojureScript, and programming in general."}]
@@ -197,7 +197,17 @@
        [:a {:href "/connections.html"} "Connections"]]]
      [:section.wraps
       page]
-     [:footer.endcap "&copy; First.Rest &amp; Boris Kourtoukov " (t/year (t/today))]]]))
+     [:footer.endcap
+      [:a {:href "/feed.atom" :title "Atom Feed"} "feed"]
+      " &mdash; "
+      [:a {:href "/humans.txt" :target "_blank" :title "Humans.txt"} "humans"]
+      " &mdash; "
+      "&copy; first.rest &amp; Boris Kourtoukov "
+      (t/year (t/today))
+      " &mdash; "
+      [:a {:target "_blank" :title "Documentation coming soon"} "doc"]
+      " &mdash; "
+      [:a {:href "https://github.com/BorisKourt/first.rest" :target "_blank" :title "Repository"} "source"]]]]))
 
 ;; ---
 ;; Connection helpers
@@ -215,7 +225,7 @@
 ;; Single post template
 ;; ---
 
-(defn single-item [request {:keys  [title connections date path link content commit]}]
+(defn single-item [request {:keys  [title connections date path link content commit]} & kind]
   (wrapper request title link
            [:article.page
             [:header
@@ -250,7 +260,7 @@
       [:span.links "connections: "  (connect connections)])]])
 
 (defn archive-group  [[year posts]]
-  (let  [sorted-posts  (reverse  (sort-by :path posts))]
+  (let  [sorted-posts  (reverse  (sort-by :date posts))]
     (cons
       [:h2.archive__title--date year]
       (map archive-post sorted-posts))))
@@ -327,11 +337,11 @@
 ;; Post and partial pages
 ;; ---
 
-(defn layout-post  [post]
-  [(:path post)  (fn  [req]  (single-item req post))])
+(defn layout-post  [post kind]
+  [(:path post)  (fn  [req]  (single-item req post kind))])
 
-(defn layout-posts  [posts]
-  (let  [post-layouts  (map layout-post posts)]
+(defn layout-posts  [posts kind]
+  (let  [post-layouts  (map #(layout-post % kind) posts)]
     (into  {} post-layouts)))
 
 (defn partial-pages  [pages]
@@ -357,8 +367,8 @@
   (stasis/merge-page-sources
     {:partials     (partial-pages  (stasis/slurp-directory "resources/partials" #".*\.html$"))
      :dynamic      (create-dynamic-pages long-posts short-posts all-posts)
-     :longform     (layout-posts long-posts)
-     :shortform    (layout-posts short-posts)
+     :longform     (layout-posts long-posts :longform)
+     :shortform    (layout-posts short-posts :shortform)
      :connections  (create-connection-pages all-posts)}))
 
 (defn setup-data-pages  [{:keys [long-posts short-posts all-posts] :as post-map}]
