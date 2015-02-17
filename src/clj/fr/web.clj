@@ -4,28 +4,35 @@
             [optimus.link :as link]
             [optimus.optimizations :as optimizations]
             [optimus.prime :as optimus]
-            [optimus.strategies :refer  [serve-live-assets]]
+            [optimus.strategies :refer  [serve-live-assets serve-frozen-assets]]
             [optimus-img-transform.core :refer [transform-images]]
+            
             [clojure.java.io :as io]
             [clojure.string :as str]
+            
             [clj-time.format :as tf]
             [clj-time.core :as t]
+            
             [hiccup.core :refer [html]]
             [hiccup.page :as hpage :refer [html5]]
+            
             [me.raynes.cegdown :as md]
+            
             [ring.middleware.content-type :refer  [wrap-content-type]]
+            
             [stasis.core :as stasis]
+            
             [net.cgrand.enlive-html :as enlive :refer [deftemplate defsnippet]]
+            
             [clj.fr.highlight :refer  [highlight-code-blocks]]
             [clj.fr.post :refer [create-post]]
             [clj.fr.git :refer :all]
             [clj.fr.picture :as picture :refer [convert-to-srcset]]
-            [clj.fr.feed :refer [feed]]
+            ;[clj.fr.feed :refer [feed]]
             [clj.fr.text :refer [humans robots]]))
 
-;; ---
+
 ;; Helpers
-;; ---
 
 (defn seq-contains?  [coll target]  (some #(= target %) coll))
 
@@ -38,36 +45,8 @@
 (defn yearf  [date]
   (tf/unparse  (tf/formatter "yyyy") date))
 
-;; ---
+
 ;; core template, wraps all other pages.
-;; ---
-
-(comment deftemplate wrapper (enlive/html-resource "templates/wrapper.html")
-  [_ _ _])
-
-(comment
-(deftemplate wrapper {:parser enlive/xml-parser} (ch/parse "resources/templates/wrapper.html")
-  [request title page]
-  [:#main-css] (enlive/set-attr :href (link/file-path request "/style/main.css"))
-  [:title] (enlive/content (str "(first (rest)) " (when title (str "; " title))))
-  [:head] (enlive/append
-             (html (map (fn [a & rest]
-                          [:link
-                           {:href (link/file-path
-                                    request
-                                    (str "/images/appicon-" a "x" a "-precomposed.png"))
-                            :sizes (str  a "x" a )
-                            :rel "apple-touch-icon-precomposed"}])
-                        [152 144 114 96 72])
-                   [:link {:href (link/file-path
-                                   request
-                                   (str "/appicon-precomposed.png"))
-                           :rel "apple-touch-icon-precomposed"}]
-                   [:link  {:rel "icon"
-                            :href  (link/file-path request "/images/favicon.ico")
-                            :type "image/x-icon"}]))
-  [:.wraps]  (enlive/html-content (html page))
-  [:.endcap] (enlive/content (str "&copy; First.Rest &amp; Boris Kourtoukov " (t/year (t/today))))))
 
 (defn wrapper
   "Too messy!"
@@ -79,12 +58,10 @@
      [:meta  {:charset "utf-8"}]
 
      ;; Responsive Device Base
-
      [:meta  {:name "viewport"
               :content "width=device-width, initial-scale=1.0"}]
 
      ;; Description
-
      [:meta {:name "title"
              :content (str "(first (rest)) " (when title (str "; " title)))}]
      [:meta {:name "description"
@@ -93,14 +70,12 @@
              :content "Clojure, ClojureScript, Code, Programming, Tutorial, Example, Lisp"}]
 
      ;; Humans and Robots
-
      [:link {:rel "author"
              :href "/humans.txt"}]
      [:link {:rel "robots"
              :href "/robots.txt"}]
 
      ;; Twitter + OG Meta
-
      [:meta {:property "twitter:card"
              :content "summary"}]
      [:meta {:property "twitter:site"
@@ -117,12 +92,10 @@
              :content link}]
 
      ;; End Twitter + OG Meta
-
      [:title (str "(first (rest)) " (when title (str "; " title)))]
      [:link  {:rel "stylesheet" :href  (link/file-path request "/styles/main.css") :type "text/css"}]
 
      ;; Atom Feeds Per Category
-
      [:link
       {:title "Full site Atom feed"
        :href "/feed.atom"
@@ -140,7 +113,6 @@
        :rel "alternate"}]
 
      ;; Webfont
-
      [:link
       {:type "text/css",
        :rel "stylesheet",
@@ -148,18 +120,15 @@
        "http://fonts.googleapis.com/css?family=Roboto:400,400italic,700,700italic"}]
 
      ;; IE9 Tweak
-
      "<!--[if gte IE 9]>\n  <style type=\"text/css\">\n    .core, .endcap, .wraps {\n       filter: none;\n    }\n  </style>\n<![endif]-->"
 
      ;; Modernity
-
      [:script {:src "/js/modernizr.js" :type "text/javascript"}]
      [:script
       {:type "text/javascript"}
       "\n Modernizr.load({\n test: Modernizr.srcset,\n nope: '/js/srcset.js'\n },{\n test: Modernizr.vhunit,\n nope: '/js/viewport.js'\n });\n"]
 
      ;; Application Icons
-
      (map (fn [a & rest]
             [:link
              {:href (link/file-path request (str "/images/appicon-" a "x" a "-precomposed.png"))
@@ -172,7 +141,6 @@
      [:link  {:rel "icon" :href  (link/file-path request "/images/favicon.ico") :type "image/x-icon"}]]
 
     ;; Begin Body
-
     [:body
      [:header.core
       [:h1.logo
@@ -209,9 +177,8 @@
       " &mdash; "
       [:a {:href "https://github.com/BorisKourt/first.rest" :target "_blank" :title "Repository"} "source"]]]]))
 
-;; ---
+
 ;; Connection helpers
-;; ---
 
 (defn make-connection  [connection]
   [:a  {:href  (str "/connections/" connection ".html")} connection])
@@ -221,9 +188,8 @@
           (make-connection  (first connections))
           (rest connections)))
 
-;; ---
+
 ;; Single post template
-;; ---
 
 (defn single-item [request {:keys  [title connections date path link content commit]} & kind]
   (wrapper request title link
@@ -244,9 +210,8 @@
                    :target "_blank"
                    :title "View changes on GitHub"} commit]])]]))
 
-;; ---
-;; Archives templates & functionality
-;; ---
+
+;; Archives: templates & functionality
 
 (defn archive-post  [{:keys  [title date connections path description]}]
   [:article.archive__post
@@ -288,9 +253,8 @@
                  [:section.main (archive-like request longform "Longform")]
                  [:aside.right  (archive-like request shortform "Shortform")])))
 
-;; ---
+
 ;; Connection templates & functionality
-;; ---
 
 (defn connection  [request posts connection]
   (archive request posts connection))
@@ -333,9 +297,9 @@
          connections-layouts  (map #(apply layout-connection-page %) connections-posts)]
     (into  {} connections-layouts)))
 
-;; ---
+
 ;; Post and partial pages
-;; ---
+
 
 (defn layout-post  [post kind]
   [(:path post)  (fn  [req]  (single-item req post kind))])
@@ -354,10 +318,10 @@
    "/shortform.html"  (fn  [req]  (archive req short-posts "Shortform"))
    "/connections.html" (fn  [req]  (connections req posts))})
 
-(defn create-feed-pages [{:keys [long-posts short-posts all-posts] :as post-map}]
-  {"/feed.atom"      (fn [req] (feed all-posts "All content" "/feed.atom"))
-   "/longform.atom"  (fn [req] (feed long-posts "Longform feed" "/longform.atom"))
-   "/shortform.atom" (fn [req] (feed short-posts "Shortform feed" "/shortform.atom"))})
+;(defn create-feed-pages [{:keys [long-posts short-posts all-posts] :as post-map}]
+;  {"/feed.atom"      (fn [req] (feed all-posts "All content" "/feed.atom"))
+;   "/longform.atom"  (fn [req] (feed long-posts "Longform feed" "/longform.atom"))
+;   "/shortform.atom" (fn [req] (feed short-posts "Shortform feed" "/shortform.atom"))})
 
 (defn create-hrobots-pages [{:keys [long-posts short-posts all-posts] :as post-map}]
   {"/robots.txt" (fn [req] (robots post-map))
@@ -374,7 +338,7 @@
 (defn setup-data-pages  [{:keys [long-posts short-posts all-posts] :as post-map}]
   (stasis/merge-page-sources
     {:hrobots (create-hrobots-pages post-map)
-     :feeds   (create-feed-pages post-map)
+     ;:feeds   (create-feed-pages post-map)
      ;:sitemap (create-sitemap all-posts)
      }))
 
@@ -388,7 +352,7 @@
           (map #(partial prepare-html-page %) (vals pages))))
 
 (defn gen-posts-from-type [kind]
-  (let [location (str "resources/" kind)]
+  (let [location (str "resources/" (name kind))]
     (map #(create-post kind %) (stasis/slurp-directory location #"\.md$"))))
 
 (defn resort-posts [posts]
@@ -408,9 +372,26 @@
       {:html (prepare-html-pages (setup-html-pages content-pages))
        :data (setup-data-pages content-pages)})))
 
-;; ---
+
 ;; Assets
-;; ---
+
+(comment defn get-assets [] ;; 4
+  (concat ;; 5
+   (assets/load-bundle "public" ;; 6
+                       "styles.css" ;; 7
+                       ["/styles/reset.css" ;; 8
+                        "/styles/main.css"]) ;; 9
+   (assets/load-bundles "public" ;; 10
+                        {"lib.js" ["/scripts/ext/angular.js"
+                                   #"/scripts/ext/.+\.js$"] ;; 11
+                         "app.js" ["/scripts/controllers.js"
+                                   "/scripts/directives.js"]})
+   (assets/load-assets "public" ;; 12
+                       ["/images/logo.png"
+                        "/images/photo.jpg"])
+   [{:path "/init.js" ;; 13
+     :contents (str "var contextPath = " (:context-path env))
+     :bundle "app.js"}]))
 
 (defn get-assets  []
   (assets/load-assets "public"  [#".*"]))
@@ -450,21 +431,19 @@
                          :progressive true})
       (optimizations/all options)))
 
-;; ---
+
 ;; Ring App
-;; ---
 
 (defn server [req]
   (-> (stasis/serve-pages get-pages)
       (optimus/wrap
         get-assets
         optimize
-        serve-live-assets)
+        serve-frozen-assets)
       wrap-content-type))
 
-;; ---
+
 ;; Static Export Setup
-;; ---
 
 (def export-dir "html")
 

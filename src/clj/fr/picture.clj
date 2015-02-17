@@ -13,10 +13,7 @@
   "Constructs the list of image files based on
   resolution and file type."
   [request image sizes]
-  (str/join ", " (map #(str (link/file-path
-                              request
-                             (str "/post-assets/" % "-" image))
-                            " " % "w")
+  (str/join ", " (map #(str "/post-assets/" % "-" image " " % "w")
                           sizes)))
 
 (defn prepare-image [node request]
@@ -28,7 +25,7 @@
              :attrs
              {:src (str "/post-assets/" (path/just-the-filename src))
               :srcset (build-srcset request (path/just-the-filename src) sizes)
-              :sizes  (str "(min-width: " breakpoint "px) 60vw, 80vw)")
+              :sizes  (str "(min-width: " breakpoint "px) 60vw, 80vw")
               :alt (if alt alt "")
               :class "optim"})
       node)))

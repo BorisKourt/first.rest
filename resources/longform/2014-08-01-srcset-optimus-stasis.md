@@ -1,6 +1,6 @@
 <!--
 {
-:title "Basic img srcset support for Stasis with Optimus"
+:title "Basic &lt;img&gt; srcset support for Stasis with Optimus"
 :connections [clojure,stasis,optimus,srcset]
 }
 -->
@@ -72,7 +72,7 @@ To start we need to adjust the way assets are optimized via Optimus:
       (optimizations/all options)))
 ```
 
-`transform-images` is added to the asset optimiziation "pipeline" and each
+`transform-images` is added to the asset optimization "pipeline" and each
 statement grabs the original image and reduces it by the parameters. Note that
 you can specify the quality parameter to carefully control size. (One trick
 not implemented here is to use a very low, around 0.3, quality value on images

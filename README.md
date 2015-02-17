@@ -8,23 +8,25 @@
 
 Although the system currently works, the following will be helpful in the long run:
 
-- [X] Create `<picture>` support - added base srcset instead.
 - [ ] Separate Dev from Prod builds, to speed up development.
-- [ ] Add WebP support
-- [X] Add Atom feeds
-- [X] Adjust post meta to use edn
 - [ ] Revise Shortform rendering and format
-- [X] Check for git integration
-- [X] Append git blame output to post
+- [ ] Bundle resources more intelligently.
+- [ ] Create enlive? templates for layouts
 - [ ] Create a transit representation for each page
 - [ ] CLJS for related content browsing
-- [X] Add marginalia
 - [ ] Output changes on build
-- [X] Generate robots and humans .txt files
 - [ ] Create a comprehensive list of utilized resources
-- [X] Add meta!
-- [ ] Create enlive? templates for layouts
+- [ ] Add WebP support
+- [ ] Add support for 'draft' posts in same directory.
 - [X] Decouple page acquisition and page rendering.
+- [X] Create `<picture>` support - added srcset instead.
+- [X] Add meta
+- [X] Generate robots and humans .txt files
+- [X] Add marginalia
+- [X] Check for git integration
+- [X] Append git blame output to post
+- [X] Add Atom feeds ~ Adjust for full text.
+- [X] Adjust post meta to use edn
 
 ## Details
 
